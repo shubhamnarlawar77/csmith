@@ -363,6 +363,12 @@ public:
 	static bool signed_char_index(void);
 	static bool signed_char_index(bool p);
 
+//extensions
+	static bool computed_goto(void);
+	static bool computed_goto(bool p);
+
+	static bool tm_relaxed(void);
+	static bool tm_relaxed(bool p);
 	/////////////////////////////////////////////////////////
 	static void set_default_settings(void);
 
@@ -596,6 +602,7 @@ private:
 	static int builtin_function_prob_;
 	static int null_pointer_dereference_prob_;
 	static int dead_pointer_dereference_prob_;
+
 	// flag that indicate the comformance level to C99. true means relaxed
 	static bool union_read_type_sensitive_;
 	static bool pre_incr_operator_;
@@ -616,6 +623,10 @@ private:
 	// flag to indicate language
 	static bool lang_cpp_;
 	static bool cpp11_;
+
+	//extensions
+	static bool computed_goto_;
+	static bool tm_relaxed_;
 private:
 	CGOptions(void);
 	CGOptions(CGOptions &cgo);
@@ -631,3 +642,4 @@ private:
 // End:
 
 // End of file.
+

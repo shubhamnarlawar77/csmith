@@ -234,7 +234,7 @@ int Statement::sid = 0;
  */
 Statement *
 Statement::make_random(CGContext &cg_context,
-					   eStatementType t)
+					   eStatementType t)//the second parameter is passed by default(MAX_STATEMENT_TYPE) in the header file
 {
 	DEPTH_GUARD_BY_TYPE_RETURN_WITH_FLAG(dtStatement, t, NULL);
 	// Should initialize table first
@@ -516,7 +516,7 @@ Statement::find_jump_sources(std::vector<const StatementGoto*>& gotos) const
 		for (i=0; i<fm->cfg_edges.size(); i++) {
 			const CFGEdge* e = fm->cfg_edges[i];
 			if (e->dest == this && e->src->eType == eGoto) {
-				const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
+const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
 				assert(sg);
 				gotos.push_back(sg);
 			}

@@ -176,6 +176,10 @@ static void print_help()
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
 
+	//extensions 
+	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
+	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
+
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -354,7 +358,6 @@ main(int argc, char **argv)
 	g_Seed = platform_gen_seed();
 
 	CGOptions::set_default_settings();
-
 	for (int i=1; i<argc; i++) {
 
 		if (strcmp (argv[i], "--help") == 0 ||
@@ -558,6 +561,7 @@ main(int argc, char **argv)
 			continue;
 		}
 
+//extensions added
 		if (strcmp (argv[i], "--compound-assignment") == 0) {
 			CGOptions::compound_assignment(true);
 			continue;
@@ -567,6 +571,17 @@ main(int argc, char **argv)
 			CGOptions::compound_assignment(false);
 			continue;
 		}
+
+		if (strcmp (argv[i], "--tm-relaxed") == 0) {
+			CGOptions::tm_relaxed(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-tm-relaxed") == 0) {
+			CGOptions::tm_relaxed(false);
+			continue;
+		}
+//***********
 
 		if (strcmp (argv[i], "--structs") == 0) {
 			CGOptions::use_struct(true);
@@ -850,6 +865,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		if (strcmp (argv[i], "--computed-goto") == 0) {
+			CGOptions::computed_goto(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-computed-goto") == 0) {
+			CGOptions::computed_goto(false);
+			continue;
+		}
+
 		if (strcmp (argv[i], "--no-jumps") == 0) {
 			CGOptions::jumps(false);
 			continue;
@@ -997,7 +1022,7 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-muls") == 0) {
 			CGOptions::muls(false);
-			continue;
+				continue;
 		}
 
 		if (strcmp (argv[i], "--checksum") == 0) {
@@ -1459,12 +1484,13 @@ main(int argc, char **argv)
 		cout << "error: options conflict - " << CGOptions::conflict_msg() << std::endl;
 		exit(-1);
 	}
-
+//generates instance of DFS/Default progarm generator and initializes it(i.e creates OutputMgr object ) and dumps the probabilities and returns the object
 	AbsProgramGenerator *generator = AbsProgramGenerator::CreateInstance(argc, argv, g_Seed);
 	if (!generator) {
 		cout << "error: can't create generator!" << std::endl;
 		exit(-1);
 	}
+//actual generation of CFG and traversing the tree
 	generator->goGenerator();
 	delete generator;
 

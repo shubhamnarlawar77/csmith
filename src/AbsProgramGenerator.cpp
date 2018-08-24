@@ -59,10 +59,11 @@ AbsProgramGenerator::CreateInstance(int argc, char *argv[], unsigned long seed)
 	}
 	else
 	{
+		//returned value is of class DefaultProgramGenerator,pointer now points to DefaultProgramGenerator class
 		AbsProgramGenerator::current_generator_ = new DefaultProgramGenerator(argc, argv, seed);
 	}
 
-	AbsProgramGenerator::current_generator_->initialize();
+	AbsProgramGenerator::current_generator_->initialize();//of class DefaultProgramGenerator
 
 	if (!(CGOptions::dump_default_probabilities().empty())) {
 		CGOptions::random_random(false);

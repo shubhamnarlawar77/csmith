@@ -456,7 +456,7 @@ Function::make_first(void)
 	const Type *ty = RandomReturnType();
 	ERROR_GUARD(NULL);
 
-	Function *f = new Function(RandomFunctionName(), ty);
+	Function *f = new Function(RandomFunctionName(), ty);//pushes into the FuncList
 	// dummy variable representing return variable, we don't care about the type, so use 0
 	string rvname = f->name + "_" + "rv";
 	CVQualifiers ret_qfer = CVQualifiers::random_qualifiers(ty);
@@ -464,7 +464,7 @@ Function::make_first(void)
 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
 
 	// create a fact manager for this function, with empty global facts
-	FactMgr* fm = new FactMgr(f);
+	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
 	FMList.push_back(fm);
 
 	ExtensionMgr::GenerateFirstParameterList(*f);
@@ -665,6 +665,7 @@ Function::GenerateBody(const CGContext &prev_context)
 
 	// Mark this function as built.
 	build_state = BUILT;
+
 }
 
 void
@@ -804,11 +805,26 @@ GenerateFunctions(void)
 	FactMgr::add_interested_facts(CGOptions::interested_facts());
 	if (CGOptions::builtins())
 		Function::initialize_builtin_functions();
+
+
 	// -----------------
 	// Create a basic first function, then generate a random graph from there.
 	/* Function *first = */ Function::make_first();
 	ERROR_RETURN();
+	/*only for block 0,as __tm_* will be for first block else could cause some goto into the __tm_* ,which causes UB.
+	*/
 
+	if(CGOptions::tm_relaxed()){
+		//need to select at least one so for CLI options add '1'
+		unsigned int count_tm_relaxed = rnd_upto(FuncListSize()) + 1 ;//if size=10 then 1,2,....10 as 1 is added 
+		for (int i = count_tm_relaxed ; i>0 ; ) {
+			int index = rnd_upto(FuncListSize());
+			if( FuncList[index]->blocks[0]->contains_tm_relaxed == 0 ){//if unset then only set,TODO-needs to do && with atomic when implemented
+					FuncList[index]->blocks[0]->contains_tm_relaxed = 1 ;
+					i--;
+			}
+		}
+	}
 	// -----------------
 	// Create body of each function, continue until no new functions are created.
 	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {

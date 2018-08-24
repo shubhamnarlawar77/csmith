@@ -77,9 +77,15 @@ public:
 
 	void OutputTmpVariableList(std::ostream &out, int indent) const;
 
-    Block* random_parent_block(void);
+	    Block* random_parent_block(void);
 
 	int block_size() { return block_size_; }
+	//*changehere*//
+	std::vector<string> addr_labels;
+	std::vector<string> try_only_labels;
+	void print_label_addr_array(std::ostream&, int) const;
+	int contains_tm_relaxed ;
+
 	// These are currently accessed directly.
 	std::vector<Statement *> stms;
 	std::vector<Statement *> deleted_stms;
@@ -119,11 +125,10 @@ public:
 	bool need_revisit;
 
 	std::vector<const Statement*> break_stms;
-
 private:
 
 	bool depth_protect;
-
+	
 	// maximum block size
 	const int block_size_;
 

@@ -1,0 +1,447 @@
+diff -u ../csmith-master1/src/AbsProgramGenerator.cpp src/AbsProgramGenerator.cpp
+--- ../csmith-master1/src/AbsProgramGenerator.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/AbsProgramGenerator.cpp	2018-08-21 22:36:58.791977809 +0530
+@@ -59,10 +59,11 @@
+ 	}
+ 	else
+ 	{
++		//returned value is of class DefaultProgramGenerator,pointer now points to DefaultProgramGenerator class
+ 		AbsProgramGenerator::current_generator_ = new DefaultProgramGenerator(argc, argv, seed);
+ 	}
+ 
+-	AbsProgramGenerator::current_generator_->initialize();
++	AbsProgramGenerator::current_generator_->initialize();//of class DefaultProgramGenerator
+ 
+ 	if (!(CGOptions::dump_default_probabilities().empty())) {
+ 		CGOptions::random_random(false);
+diff -u ../csmith-master1/src/Block.cpp src/Block.cpp
+--- ../csmith-master1/src/Block.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/Block.cpp	2018-08-21 22:36:58.791977809 +0530
+@@ -64,7 +64,8 @@
+ #include "CFGEdge.h"
+ #include "Expression.h"
+ #include "VectorFilter.h"
+-
++#include <string>
++#include <vector>
+ using namespace std;
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+@@ -115,6 +116,8 @@
+ 	b->post_creation_analysis(cg_context, pre_effect);
+ 	curr_func->stack.pop_back();
+ 	return b;
++
++      	
+ }
+ 
+ /*
+@@ -128,7 +131,7 @@
+ 
+ 	Function *curr_func = cg_context.get_current_func();
+ 	assert(curr_func);
+-
++	//max_block_size was set in CGOptions during CLI argument passing 
+ 	Block *b = new Block(cg_context.get_current_block(), CGOptions::max_block_size());
+ 	b->func = curr_func;
+ 	b->looping = looping;
+@@ -148,6 +151,7 @@
+ 
+ 	unsigned int max = BlockProbability(*b);
+ 	if (Error::get_error() != SUCCESS) {
++		cout << "\nerror" ;
+ 		curr_func->stack.pop_back();
+ 		delete b;
+ 		return NULL;
+@@ -160,13 +164,13 @@
+ 		// In the exhaustive mode, Statement::make_random could return NULL;
+ 		if (!s)
+ 			break;
+-		b->stms.push_back(s);
++		b->stms.push_back(s);//*the s is surely correct*//
+ 		if (s->must_return()) {
+ 			break;
+ 		}
+ 	}
+-
+ 	if (Error::get_error() != SUCCESS) {
++		cout << "\nerror";
+ 		curr_func->stack.pop_back();
+ 		delete b;
+ 		return NULL;
+@@ -181,6 +185,7 @@
+ 	b->post_creation_analysis(cg_context, pre_effect);
+ 
+ 	if (Error::get_error() != SUCCESS) {
++		cout << "\nerror" ;
+ 		curr_func->stack.pop_back();
+ 		delete b;
+ 		return NULL;
+@@ -188,7 +193,8 @@
+ 
+ 	curr_func->stack.pop_back();
+ 	if (Error::get_error() != SUCCESS) {
+-		//curr_func->stack.pop_back();
++		cout << "\nerror" ;
++		curr_func->stack.pop_back();
+ 		delete b;
+ 		return NULL;
+ 	}
+@@ -196,6 +202,32 @@
+ 	// ISSUE: in the exhaustive mode, do we need a return statement here
+ 	// if the last statement is not?
+ 	Error::set_error(SUCCESS);
++
++	//*changehere*//
++	if(CGOptions::computed_goto()){
++		if(curr_func->blocks[0]->stm_id==b->stm_id){
++			std::vector<string> labels;
++			labels.clear();//vimp otherwise gives UB,gives unknown labels
++			curr_func->blocks[0]->find_contained_labels(labels);
++			string ss="";
++			for (std::vector<string>::iterator itr=labels.begin();itr!=labels.end();itr++) {
++				ss.clear();
++				ss += "&&";
++				ss += *itr;
++				curr_func->blocks[0]->addr_labels.push_back(ss);//only adds in the main array related to function.
++			}
++			//__________________________________________________________
++			for (size_t i=0; i<fm->cfg_edges.size();i++) {
++				const CFGEdge* e = fm->cfg_edges[i];
++				if(e->src->eType == eGoto) {
++					const StatementGoto* sg = dynamic_cast<const StatementGoto* >(e->src);
++					assert(sg);
++					sg->change_label(curr_func->blocks[0]->addr_labels);
++				}
++			}
++
++		}
++	}
+ 	return b;
+ }
+ 
+@@ -294,7 +326,11 @@
+ 	std::ostringstream ss;
+ 	ss << "block id: " << stm_id;
+ 	output_comment_line(out, ss.str());
+-
++//*changehere*//
++	if(CGOptions::computed_goto()){
++		if(!this->addr_labels.empty())
++        		this->print_label_addr_array(out,indent);
++	}
+ 	if (CGOptions::depth_protect()) {
+ 		out << "DEPTH++;" << endl;
+ 	}
+@@ -805,6 +841,19 @@
+ 	}
+ }
+ 
++void 
++Block::print_label_addr_array(std::ostream &out , int indent) const{
++	ostringstream ss;
++	output_tab (out,indent);
++	cout << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
++	cout << "\nvoid *target[] = { ";
++	for(unsigned int i=0; i < addr_labels.size();i++){
++		i!=0 ? cout << ", " : cout << ""; 
++		cout << addr_labels[i];
++	}
++
++	cout << "};\n";
++}
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ // Local Variables:
+diff -u ../csmith-master1/src/Block.h src/Block.h
+--- ../csmith-master1/src/Block.h	2018-04-07 19:08:50.000000000 +0530
++++ src/Block.h	2018-08-21 22:36:58.795977809 +0530
+@@ -77,9 +77,14 @@
+ 
+ 	void OutputTmpVariableList(std::ostream &out, int indent) const;
+ 
+-    Block* random_parent_block(void);
++	    Block* random_parent_block(void);
+ 
+ 	int block_size() { return block_size_; }
++	//*changehere*//
++	std::vector<string> addr_labels;
++	std::vector<string> try_only_labels;
++	void print_label_addr_array(std::ostream&, int) const;
++
+ 	// These are currently accessed directly.
+ 	std::vector<Statement *> stms;
+ 	std::vector<Statement *> deleted_stms;
+@@ -119,11 +124,10 @@
+ 	bool need_revisit;
+ 
+ 	std::vector<const Statement*> break_stms;
+-
+ private:
+ 
+ 	bool depth_protect;
+-
++	
+ 	// maximum block size
+ 	const int block_size_;
+ 
+diff -u ../csmith-master1/src/CGOptions.cpp src/CGOptions.cpp
+--- ../csmith-master1/src/CGOptions.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/CGOptions.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -199,6 +199,7 @@
+ DEFINE_GETTER_SETTER_BOOL(lang_cpp);
+ DEFINE_GETTER_SETTER_BOOL(cpp11);
+ DEFINE_GETTER_SETTER_BOOL(fast_execution);
++DEFINE_GETTER_SETTER_BOOL(computed_goto);
+ 
+ void
+ CGOptions::set_default_builtin_kinds()
+@@ -313,6 +314,7 @@
+   fast_execution(false);
+ 
+ 	set_default_builtin_kinds();
++	computed_goto(false);
+ }
+ 
+ // Add options necessary for cpp 
+diff -u ../csmith-master1/src/CGOptions.h src/CGOptions.h
+--- ../csmith-master1/src/CGOptions.h	2018-04-07 19:08:50.000000000 +0530
++++ src/CGOptions.h	2018-08-21 22:36:58.795977809 +0530
+@@ -363,6 +363,8 @@
+ 	static bool signed_char_index(void);
+ 	static bool signed_char_index(bool p);
+ 
++	static bool computed_goto(void);
++	static bool computed_goto(bool p);
+ 	/////////////////////////////////////////////////////////
+ 	static void set_default_settings(void);
+ 
+@@ -579,6 +581,7 @@
+ 	static bool no_return_dead_ptr_;
+ 	static bool hash_value_printf_;
+ 	static bool signed_char_index_;
++	static bool computed_goto_;
+ 	static std::string	dump_default_probabilities_;
+ 	static std::string	dump_random_probabilities_;
+ 	static std::string	probability_configuration_;
+@@ -596,6 +599,7 @@
+ 	static int builtin_function_prob_;
+ 	static int null_pointer_dereference_prob_;
+ 	static int dead_pointer_dereference_prob_;
++
+ 	// flag that indicate the comformance level to C99. true means relaxed
+ 	static bool union_read_type_sensitive_;
+ 	static bool pre_incr_operator_;
+@@ -631,3 +635,4 @@
+ // End:
+ 
+ // End of file.
++
+diff -u ../csmith-master1/src/DefaultOutputMgr.cpp src/DefaultOutputMgr.cpp
+--- ../csmith-master1/src/DefaultOutputMgr.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/DefaultOutputMgr.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -196,7 +196,9 @@
+ {
+ 	OutputMgr::OutputHeader(argc, argv, seed);
+ }
+-
++/*
++*Function actually outputs the random generated program,except the comment part of header section
++*/
+ void
+ DefaultOutputMgr::Output()
+ {
+diff -u ../csmith-master1/src/DefaultProgramGenerator.cpp src/DefaultProgramGenerator.cpp
+--- ../csmith-master1/src/DefaultProgramGenerator.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/DefaultProgramGenerator.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -73,7 +73,7 @@
+ 	if (CGOptions::get_reducer()) {
+ 		output_mgr_ = new ReducerOutputMgr();
+ 	} else {
+-		output_mgr_ = DefaultOutputMgr::CreateInstance();
++		output_mgr_ = DefaultOutputMgr::CreateInstance();//the pointer points to DefaultOutputMgr class.
+ 	}
+ 	assert(output_mgr_);
+ 
+@@ -90,11 +90,10 @@
+ void
+ DefaultProgramGenerator::goGenerator()
+ {
+-	output_mgr_->OutputHeader(argc_, argv_, seed_);
+-
++	output_mgr_->OutputHeader(argc_, argv_, seed_);//output_mgr points to DefaultOutputMgr class,so function definition in that class and *NOT OF Output_mgr class*
+ 	GenerateAllTypes();
+ 	GenerateFunctions();
+-	output_mgr_->Output();
++	output_mgr_->Output();//this actually outputs the program generated from above
+ 	if (CGOptions::identify_wrappers()) {
+ 		ofstream ofile;
+ 		ofile.open("wrapper.h");
+diff -u ../csmith-master1/src/Function.cpp src/Function.cpp
+--- ../csmith-master1/src/Function.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/Function.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -456,7 +456,7 @@
+ 	const Type *ty = RandomReturnType();
+ 	ERROR_GUARD(NULL);
+ 
+-	Function *f = new Function(RandomFunctionName(), ty);
++	Function *f = new Function(RandomFunctionName(), ty);//pushes into the FuncList
+ 	// dummy variable representing return variable, we don't care about the type, so use 0
+ 	string rvname = f->name + "_" + "rv";
+ 	CVQualifiers ret_qfer = CVQualifiers::random_qualifiers(ty);
+@@ -464,7 +464,7 @@
+ 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
+ 
+ 	// create a fact manager for this function, with empty global facts
+-	FactMgr* fm = new FactMgr(f);
++	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
+ 	FMList.push_back(fm);
+ 
+ 	ExtensionMgr::GenerateFirstParameterList(*f);
+Common subdirectories: ../csmith-master1/src/rand48 and src/rand48
+diff -u ../csmith-master1/src/RandomProgramGenerator.cpp src/RandomProgramGenerator.cpp
+--- ../csmith-master1/src/RandomProgramGenerator.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/RandomProgramGenerator.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -175,6 +175,7 @@
+ 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
+ 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
+ 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
++	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
+ 
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+@@ -354,7 +355,6 @@
+ 	g_Seed = platform_gen_seed();
+ 
+ 	CGOptions::set_default_settings();
+-
+ 	for (int i=1; i<argc; i++) {
+ 
+ 		if (strcmp (argv[i], "--help") == 0 ||
+@@ -850,6 +850,16 @@
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--computed-goto") == 0) {
++			CGOptions::computed_goto(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-computed-goto") == 0) {
++			CGOptions::computed_goto(false);
++			continue;
++		}
++
+ 		if (strcmp (argv[i], "--no-jumps") == 0) {
+ 			CGOptions::jumps(false);
+ 			continue;
+@@ -997,7 +1007,7 @@
+ 
+ 		if (strcmp (argv[i], "--no-muls") == 0) {
+ 			CGOptions::muls(false);
+-			continue;
++				continue;
+ 		}
+ 
+ 		if (strcmp (argv[i], "--checksum") == 0) {
+@@ -1459,12 +1469,13 @@
+ 		cout << "error: options conflict - " << CGOptions::conflict_msg() << std::endl;
+ 		exit(-1);
+ 	}
+-
++//generates instance of DFS/Default progarm gerarator and initializes it(i.e creates OutputMgr object ) and dumps the probabilities and returns the object
+ 	AbsProgramGenerator *generator = AbsProgramGenerator::CreateInstance(argc, argv, g_Seed);
+ 	if (!generator) {
+ 		cout << "error: can't create generator!" << std::endl;
+ 		exit(-1);
+ 	}
++//actual generation of CFG and traversing the tree
+ 	generator->goGenerator();
+ 	delete generator;
+ 
+diff -u ../csmith-master1/src/Statement.cpp src/Statement.cpp
+--- ../csmith-master1/src/Statement.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/Statement.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -234,7 +234,7 @@
+  */
+ Statement *
+ Statement::make_random(CGContext &cg_context,
+-					   eStatementType t)
++					   eStatementType t)//the second parameter is passed by default(MAX_STATEMENT_TYPE) in the header file
+ {
+ 	DEPTH_GUARD_BY_TYPE_RETURN_WITH_FLAG(dtStatement, t, NULL);
+ 	// Should initialize table first
+@@ -516,7 +516,7 @@
+ 		for (i=0; i<fm->cfg_edges.size(); i++) {
+ 			const CFGEdge* e = fm->cfg_edges[i];
+ 			if (e->dest == this && e->src->eType == eGoto) {
+-				const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
++const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
+ 				assert(sg);
+ 				gotos.push_back(sg);
+ 			}
+diff -u ../csmith-master1/src/StatementGoto.cpp src/StatementGoto.cpp
+--- ../csmith-master1/src/StatementGoto.cpp	2018-04-07 19:08:50.000000000 +0530
++++ src/StatementGoto.cpp	2018-08-21 22:36:58.795977809 +0530
+@@ -260,7 +260,12 @@
+ 	out << ")";
+ 	outputln(out);
+ 	output_tab(out, indent+1);
+-	out << "goto " << label << ";";
++
++//**changehere**//
++	if(CGOptions::computed_goto())
++		out << "goto " << other_name_for_label << ";";
++	else
++		out << "goto " << label << ";";
+ 	outputln(out);
+ }
+ 
+@@ -415,7 +420,28 @@
+ {
+ 	stm_labels.clear();
+ }
+-
++//*changehere*//
++void 
++StatementGoto::change_label(std::vector<string> addr_labels) const{
++	string find_label="";
++	find_label+="&&";
++	find_label+=label;
++	auto it = std::find(addr_labels.begin(),addr_labels.end(),find_label);
++	int index;
++	if(it == addr_labels.end()){
++		assert ("LABEL NOT FOUND");
++	}
++	else{
++	index = std::distance (addr_labels.begin(),it);
++	}
++	std::stringstream ss;
++	ss.clear();
++	ss<< "*target[";
++	ss<<index;
++	ss<<"]";
++	other_name_for_label="";
++	other_name_for_label=ss.str();
++}
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ // Local Variables:
+diff -u ../csmith-master1/src/StatementGoto.h src/StatementGoto.h
+--- ../csmith-master1/src/StatementGoto.h	2018-04-07 19:08:50.000000000 +0530
++++ src/StatementGoto.h	2018-08-21 22:36:58.795977809 +0530
+@@ -69,9 +69,14 @@
+ 
+ 	const Expression &test;
+ 	const Statement* dest;
++//*changehere added mutable **/
+ 	std::string label;
++	mutable std::string other_name_for_label;
+ 	std::vector<const Variable*> init_skipped_vars;
+ 	static std::map<const Statement*, std::string> stm_labels;
++
++	//*changehere*//
++	void change_label(std::vector<string> addr_labels) const;
+ };
+ 
+ ///////////////////////////////////////////////////////////////////////////////

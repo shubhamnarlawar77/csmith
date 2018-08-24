@@ -64,7 +64,8 @@
 #include "CFGEdge.h"
 #include "Expression.h"
 #include "VectorFilter.h"
-
+#include <string>
+#include <vector>
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -115,6 +116,7 @@ Block::make_dummy_block(CGContext &cg_context)
 	b->post_creation_analysis(cg_context, pre_effect);
 	curr_func->stack.pop_back();
 	return b;
+
 }
 
 /*
@@ -128,7 +130,7 @@ Block::make_random(CGContext &cg_context, bool looping)
 
 	Function *curr_func = cg_context.get_current_func();
 	assert(curr_func);
-
+	//max_block_size was set in CGOptions during CLI argument passing 
 	Block *b = new Block(cg_context.get_current_block(), CGOptions::max_block_size());
 	b->func = curr_func;
 	b->looping = looping;
@@ -148,6 +150,7 @@ Block::make_random(CGContext &cg_context, bool looping)
 
 	unsigned int max = BlockProbability(*b);
 	if (Error::get_error() != SUCCESS) {
+		cout << "\nerror" ;
 		curr_func->stack.pop_back();
 		delete b;
 		return NULL;
@@ -160,13 +163,13 @@ Block::make_random(CGContext &cg_context, bool looping)
 		// In the exhaustive mode, Statement::make_random could return NULL;
 		if (!s)
 			break;
-		b->stms.push_back(s);
+		b->stms.push_back(s);//*the s is surely correct*//
 		if (s->must_return()) {
 			break;
 		}
 	}
-
 	if (Error::get_error() != SUCCESS) {
+		cout << "\nerror";
 		curr_func->stack.pop_back();
 		delete b;
 		return NULL;
@@ -181,6 +184,7 @@ Block::make_random(CGContext &cg_context, bool looping)
 	b->post_creation_analysis(cg_context, pre_effect);
 
 	if (Error::get_error() != SUCCESS) {
+		cout << "\nerror" ;
 		curr_func->stack.pop_back();
 		delete b;
 		return NULL;
@@ -188,7 +192,8 @@ Block::make_random(CGContext &cg_context, bool looping)
 
 	curr_func->stack.pop_back();
 	if (Error::get_error() != SUCCESS) {
-		//curr_func->stack.pop_back();
+		cout << "\nerror" ;
+		curr_func->stack.pop_back();
 		delete b;
 		return NULL;
 	}
@@ -196,6 +201,32 @@ Block::make_random(CGContext &cg_context, bool looping)
 	// ISSUE: in the exhaustive mode, do we need a return statement here
 	// if the last statement is not?
 	Error::set_error(SUCCESS);
+
+	//*changehere*//
+	if(CGOptions::computed_goto()){
+		if(curr_func->blocks[0]->stm_id==b->stm_id){
+			std::vector<string> labels;
+			labels.clear();//vimp otherwise gives UB,gives unknown labels
+			curr_func->blocks[0]->find_contained_labels(labels);
+			string ss="";
+			for (std::vector<string>::iterator itr=labels.begin();itr!=labels.end();itr++) {
+				ss.clear();
+				ss += "&&";
+				ss += *itr;
+				curr_func->blocks[0]->addr_labels.push_back(ss);//only adds in the main array related to function.
+			}
+			//__________________________________________________________
+			for (size_t i=0; i<fm->cfg_edges.size();i++) {
+				const CFGEdge* e = fm->cfg_edges[i];
+				if(e->src->eType == eGoto) {
+					const StatementGoto* sg = dynamic_cast<const StatementGoto* >(e->src);
+					assert(sg);
+					sg->change_label(curr_func->blocks[0]->addr_labels);
+				}
+			}
+
+		}
+	}
 	return b;
 }
 
@@ -208,7 +239,7 @@ Block::Block(Block* b, int block_size)
 	  depth_protect(false),
 	  block_size_(block_size)
 {
-
+	contains_tm_relaxed = 0;
 }
 
 #if 0
@@ -221,6 +252,7 @@ Block::Block(const Block &b)
 	  local_vars(b.local_vars),
 	  depth_protect(b.depth_protect)
 {
+	contains_tm_relaxed = 0;
 	// Nothing else to do.
 }
 #endif
@@ -295,6 +327,19 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	ss << "block id: " << stm_id;
 	output_comment_line(out, ss.str());
 
+//*changehere*//
+
+	if (this->contains_tm_relaxed == 1){
+		outputln(out);
+		output_tab(out, indent);
+		cout << " __transaction_relaxed {";
+		outputln(out);
+	}
+
+	if(CGOptions::computed_goto()){
+		if(!this->addr_labels.empty())
+	      		this->print_label_addr_array(out,indent);
+	}
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH++;" << endl;
 	}
@@ -311,9 +356,17 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	}
 	indent--;
 
+	if (this->contains_tm_relaxed == 1){
+		output_tab(out, indent);
+		cout << " }";
+		outputln(out);
+	}
+
+
 	output_tab(out, indent);
 	out << "}";
 	outputln(out);
+
 }
 
 /* find the last effective statement for this block, note
@@ -803,6 +856,19 @@ Block::post_creation_analysis(CGContext& cg_context, const Effect& pre_effect)
 		Statement* sr = append_return_stmt(cg_context);
 		fm->set_fact_out(this, fm->map_facts_out[sr]);
 	}
+}
+void 
+Block::print_label_addr_array(std::ostream &out , int indent) const{
+	ostringstream ss;
+	output_tab (out,indent);
+	cout << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
+	cout << "\nvoid *target[] = { ";
+	for(unsigned int i=0; i < addr_labels.size();i++){
+		i!=0 ? cout << ", " : cout << ""; 
+		cout << addr_labels[i];
+	}
+
+	cout << "};\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -196,7 +196,9 @@ DefaultOutputMgr::OutputHeader(int argc, char *argv[], unsigned long seed)
 {
 	OutputMgr::OutputHeader(argc, argv, seed);
 }
-
+/*
+*Function actually outputs the random generated program,except the comment part of header section
+*/
 void
 DefaultOutputMgr::Output()
 {

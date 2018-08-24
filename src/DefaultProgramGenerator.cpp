@@ -73,7 +73,7 @@ DefaultProgramGenerator::initialize()
 	if (CGOptions::get_reducer()) {
 		output_mgr_ = new ReducerOutputMgr();
 	} else {
-		output_mgr_ = DefaultOutputMgr::CreateInstance();
+		output_mgr_ = DefaultOutputMgr::CreateInstance();//the pointer points to DefaultOutputMgr class.
 	}
 	assert(output_mgr_);
 
@@ -90,11 +90,10 @@ DefaultProgramGenerator::get_count_prefix(const std::string &)
 void
 DefaultProgramGenerator::goGenerator()
 {
-	output_mgr_->OutputHeader(argc_, argv_, seed_);
-
+	output_mgr_->OutputHeader(argc_, argv_, seed_);//output_mgr points to DefaultOutputMgr/DFS class,so function definition in that class and *NOT OF Output_mgr class*
 	GenerateAllTypes();
 	GenerateFunctions();
-	output_mgr_->Output();
+	output_mgr_->Output();//this actually outputs the program generated from above
 	if (CGOptions::identify_wrappers()) {
 		ofstream ofile;
 		ofile.open("wrapper.h");

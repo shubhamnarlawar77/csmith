@@ -1,0 +1,275 @@
+diff --git a/csmith-gcc-extensions/src/Block.cpp b/csmith-gcc-extensions/src/Block.cpp
+index 9cf2fc0..b316dc3 100644
+--- a/csmith-gcc-extensions/src/Block.cpp
++++ b/csmith-gcc-extensions/src/Block.cpp
+@@ -117,7 +117,6 @@ Block::make_dummy_block(CGContext &cg_context)
+ 	curr_func->stack.pop_back();
+ 	return b;
+ 
+-      	
+ }
+ 
+ /*
+@@ -240,7 +239,7 @@ Block::Block(Block* b, int block_size)
+ 	  depth_protect(false),
+ 	  block_size_(block_size)
+ {
+-
++	contains_tm_relaxed = 0;
+ }
+ 
+ #if 0
+@@ -253,6 +252,7 @@ Block::Block(const Block &b)
+ 	  local_vars(b.local_vars),
+ 	  depth_protect(b.depth_protect)
+ {
++	contains_tm_relaxed = 0;
+ 	// Nothing else to do.
+ }
+ #endif
+@@ -326,10 +326,19 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ 	std::ostringstream ss;
+ 	ss << "block id: " << stm_id;
+ 	output_comment_line(out, ss.str());
++
+ //*changehere*//
++
++	if (this->contains_tm_relaxed == 1){
++		outputln(out);
++		output_tab(out, indent);
++		cout << " __transaction_relaxed {";
++		outputln(out);
++	}
++
+ 	if(CGOptions::computed_goto()){
+ 		if(!this->addr_labels.empty())
+-        		this->print_label_addr_array(out,indent);
++	      		this->print_label_addr_array(out,indent);
+ 	}
+ 	if (CGOptions::depth_protect()) {
+ 		out << "DEPTH++;" << endl;
+@@ -347,9 +356,17 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ 	}
+ 	indent--;
+ 
++	if (this->contains_tm_relaxed == 1){
++		output_tab(out, indent);
++		cout << " }";
++		outputln(out);
++	}
++
++
+ 	output_tab(out, indent);
+ 	out << "}";
+ 	outputln(out);
++
+ }
+ 
+ /* find the last effective statement for this block, note
+@@ -840,7 +857,6 @@ Block::post_creation_analysis(CGContext& cg_context, const Effect& pre_effect)
+ 		fm->set_fact_out(this, fm->map_facts_out[sr]);
+ 	}
+ }
+-
+ void 
+ Block::print_label_addr_array(std::ostream &out , int indent) const{
+ 	ostringstream ss;
+@@ -854,6 +870,7 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
+ 
+ 	cout << "};\n";
+ }
++
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ // Local Variables:
+diff --git a/csmith-gcc-extensions/src/Block.h b/csmith-gcc-extensions/src/Block.h
+index 36edf2c..84cd971 100644
+--- a/csmith-gcc-extensions/src/Block.h
++++ b/csmith-gcc-extensions/src/Block.h
+@@ -84,6 +84,7 @@ public:
+ 	std::vector<string> addr_labels;
+ 	std::vector<string> try_only_labels;
+ 	void print_label_addr_array(std::ostream&, int) const;
++	int contains_tm_relaxed ;
+ 
+ 	// These are currently accessed directly.
+ 	std::vector<Statement *> stms;
+diff --git a/csmith-gcc-extensions/src/CGOptions.cpp b/csmith-gcc-extensions/src/CGOptions.cpp
+index 84b5d9a..f4bda31 100644
+--- a/csmith-gcc-extensions/src/CGOptions.cpp
++++ b/csmith-gcc-extensions/src/CGOptions.cpp
+@@ -199,7 +199,9 @@ DEFINE_GETTER_SETTER_BOOL(const_struct_union_fields);
+ DEFINE_GETTER_SETTER_BOOL(lang_cpp);
+ DEFINE_GETTER_SETTER_BOOL(cpp11);
+ DEFINE_GETTER_SETTER_BOOL(fast_execution);
++//extensions
+ DEFINE_GETTER_SETTER_BOOL(computed_goto);
++DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
+ 
+ void
+ CGOptions::set_default_builtin_kinds()
+@@ -311,10 +313,12 @@ CGOptions::set_default_settings(void)
+ 	addr_taken_of_locals(true);
+ 	lang_cpp(false);
+ 	cpp11(false);
+-  fast_execution(false);
++	fast_execution(false);
+ 
+ 	set_default_builtin_kinds();
++	//extensions
+ 	computed_goto(false);
++	tm_relaxed(false);
+ }
+ 
+ // Add options necessary for cpp 
+diff --git a/csmith-gcc-extensions/src/CGOptions.h b/csmith-gcc-extensions/src/CGOptions.h
+index 003b2c5..444a6bb 100644
+--- a/csmith-gcc-extensions/src/CGOptions.h
++++ b/csmith-gcc-extensions/src/CGOptions.h
+@@ -363,8 +363,12 @@ public:
+ 	static bool signed_char_index(void);
+ 	static bool signed_char_index(bool p);
+ 
++//extensions
+ 	static bool computed_goto(void);
+ 	static bool computed_goto(bool p);
++
++	static bool tm_relaxed(void);
++	static bool tm_relaxed(bool p);
+ 	/////////////////////////////////////////////////////////
+ 	static void set_default_settings(void);
+ 
+@@ -581,7 +585,6 @@ private:
+ 	static bool no_return_dead_ptr_;
+ 	static bool hash_value_printf_;
+ 	static bool signed_char_index_;
+-	static bool computed_goto_;
+ 	static std::string	dump_default_probabilities_;
+ 	static std::string	dump_random_probabilities_;
+ 	static std::string	probability_configuration_;
+@@ -620,6 +623,10 @@ private:
+ 	// flag to indicate language
+ 	static bool lang_cpp_;
+ 	static bool cpp11_;
++
++	//extensions
++	static bool computed_goto_;
++	static bool tm_relaxed_;
+ private:
+ 	CGOptions(void);
+ 	CGOptions(CGOptions &cgo);
+diff --git a/csmith-gcc-extensions/src/DefaultProgramGenerator.cpp b/csmith-gcc-extensions/src/DefaultProgramGenerator.cpp
+index 40aa9b8..ade758a 100644
+--- a/csmith-gcc-extensions/src/DefaultProgramGenerator.cpp
++++ b/csmith-gcc-extensions/src/DefaultProgramGenerator.cpp
+@@ -90,7 +90,7 @@ DefaultProgramGenerator::get_count_prefix(const std::string &)
+ void
+ DefaultProgramGenerator::goGenerator()
+ {
+-	output_mgr_->OutputHeader(argc_, argv_, seed_);//output_mgr points to DefaultOutputMgr class,so function definition in that class and *NOT OF Output_mgr class*
++	output_mgr_->OutputHeader(argc_, argv_, seed_);//output_mgr points to DefaultOutputMgr/DFS class,so function definition in that class and *NOT OF Output_mgr class*
+ 	GenerateAllTypes();
+ 	GenerateFunctions();
+ 	output_mgr_->Output();//this actually outputs the program generated from above
+diff --git a/csmith-gcc-extensions/src/Function.cpp b/csmith-gcc-extensions/src/Function.cpp
+index 45a2c89..8a6875a 100644
+--- a/csmith-gcc-extensions/src/Function.cpp
++++ b/csmith-gcc-extensions/src/Function.cpp
+@@ -665,6 +665,7 @@ Function::GenerateBody(const CGContext &prev_context)
+ 
+ 	// Mark this function as built.
+ 	build_state = BUILT;
++
+ }
+ 
+ void
+@@ -804,11 +805,26 @@ GenerateFunctions(void)
+ 	FactMgr::add_interested_facts(CGOptions::interested_facts());
+ 	if (CGOptions::builtins())
+ 		Function::initialize_builtin_functions();
++
++
+ 	// -----------------
+ 	// Create a basic first function, then generate a random graph from there.
+ 	/* Function *first = */ Function::make_first();
+ 	ERROR_RETURN();
+-
++	/*only for block 0,as __tm_* will be for first block else could cause some goto into the __tm_* ,which causes UB.
++	*/
++
++	if(CGOptions::tm_relaxed()){
++		//need to select at least one so for CLI options add '1'
++		unsigned int count_tm_relaxed = rnd_upto(FuncListSize()) + 1 ;//if size=10 then 1,2,....10 as 1 is added 
++		for (int i = count_tm_relaxed ; i>0 ; ) {
++			int index = rnd_upto(FuncListSize());
++			if( FuncList[index]->blocks[0]->contains_tm_relaxed == 0 ){//if unset then only set,TODO-needs to do && with atomic when implemented
++					FuncList[index]->blocks[0]->contains_tm_relaxed = 1 ;
++					i--;
++			}
++		}
++	}
+ 	// -----------------
+ 	// Create body of each function, continue until no new functions are created.
+ 	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {
+diff --git a/csmith-gcc-extensions/src/Function.h b/csmith-gcc-extensions/src/Function.h
+index 837820f..4e48ba7 100644
+--- a/csmith-gcc-extensions/src/Function.h
++++ b/csmith-gcc-extensions/src/Function.h
+@@ -121,6 +121,7 @@ public:
+ 	bool is_inlined;
+ 	bool is_builtin;
+ 	int  visited_cnt;
++
+ 	Effect accum_eff_context;
+ 
+ private:
+diff --git a/csmith-gcc-extensions/src/RandomProgramGenerator.cpp b/csmith-gcc-extensions/src/RandomProgramGenerator.cpp
+index 994c741..1ad6ef3 100644
+--- a/csmith-gcc-extensions/src/RandomProgramGenerator.cpp
++++ b/csmith-gcc-extensions/src/RandomProgramGenerator.cpp
+@@ -175,7 +175,10 @@ static void print_help()
+ 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
+ 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
+ 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
++
++	//extensions 
+ 	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
++	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
+ 
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+@@ -558,6 +561,7 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++//extensions added
+ 		if (strcmp (argv[i], "--compound-assignment") == 0) {
+ 			CGOptions::compound_assignment(true);
+ 			continue;
+@@ -568,6 +572,17 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--tm-relaxed") == 0) {
++			CGOptions::tm_relaxed(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-tm-relaxed") == 0) {
++			CGOptions::tm_relaxed(false);
++			continue;
++		}
++//***********
++
+ 		if (strcmp (argv[i], "--structs") == 0) {
+ 			CGOptions::use_struct(true);
+ 			continue;
+@@ -1469,7 +1484,7 @@ main(int argc, char **argv)
+ 		cout << "error: options conflict - " << CGOptions::conflict_msg() << std::endl;
+ 		exit(-1);
+ 	}
+-//generates instance of DFS/Default progarm gerarator and initializes it(i.e creates OutputMgr object ) and dumps the probabilities and returns the object
++//generates instance of DFS/Default progarm generator and initializes it(i.e creates OutputMgr object ) and dumps the probabilities and returns the object
+ 	AbsProgramGenerator *generator = AbsProgramGenerator::CreateInstance(argc, argv, g_Seed);
+ 	if (!generator) {
+ 		cout << "error: can't create generator!" << std::endl;
