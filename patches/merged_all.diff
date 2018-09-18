@@ -1,0 +1,1336 @@
+diff --git a/src/Block.cpp b/src/Block.cpp
+index b316dc3..e932e07 100644
+--- a/src/Block.cpp
++++ b/src/Block.cpp
+@@ -322,7 +322,16 @@ void
+ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ {
+ 	output_tab(out, indent);
+-	out << "{ ";
++	out << "{";
++
++	if(CGOptions::stmt_expr()){
++		outputln(out);
++		indent++;
++		if(this->func_start_stmt_expr || (!this->contains_label) ){
++			output_tab(out, indent);
++			out << "({";
++		}
++	}
+ 	std::ostringstream ss;
+ 	ss << "block id: " << stm_id;
+ 	output_comment_line(out, ss.str());
+@@ -343,7 +352,17 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ 	if (CGOptions::depth_protect()) {
+ 		out << "DEPTH++;" << endl;
+ 	}
+-
++	if(CGOptions::local_labels()){
++		if( this->contains_label && !(this->labels_in_block.empty()) ){
++			indent++;
++			output_tab(out , indent);
++			out << "__label__ ";
++			outputlocal_labels();
++			out << ";";
++			outputln(out);
++			indent--;
++		}
++	}
+ 	indent++;
+ 	if (CGOptions::math_notmp())
+ 		OutputTmpVariableList(out, indent);
+@@ -354,7 +373,6 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ 	if (CGOptions::depth_protect()) {
+ 		out << "DEPTH--;" << endl;
+ 	}
+-	indent--;
+ 
+ 	if (this->contains_tm_relaxed == 1){
+ 		output_tab(out, indent);
+@@ -362,6 +380,16 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
+ 		outputln(out);
+ 	}
+ 
++       if(CGOptions::stmt_expr()){
++               if(this->func_start_stmt_expr || ! (this->contains_label) ){
++                       indent--;
++                       outputln(out);
++                       output_tab(out, indent);
++                       out << "});" ;
++               }
++       }
++       outputln(out);
++       indent--;
+ 
+ 	output_tab(out, indent);
+ 	out << "}";
+@@ -870,7 +898,17 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
+ 
+ 	cout << "};\n";
+ }
+-
++void
++Block::outputlocal_labels () const{
++		for (int i =0 ;i < this->labels_in_block.size(); i++){
++			if (i == 0)
++				std::cout << this->labels_in_block[i];
++			else{
++				std::cout << " , ";
++				std::cout << this->labels_in_block[i];
++			}
++		}
++}
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ // Local Variables:
+diff --git a/src/Block.h b/src/Block.h
+index 84cd971..b3ebbcb 100644
+--- a/src/Block.h
++++ b/src/Block.h
+@@ -125,6 +125,12 @@ public:
+ 	bool need_revisit;
+ 
+ 	std::vector<const Statement*> break_stms;
++        bool contains_label = false;
++        std::vector<string> labels_in_block;
++        void outputlocal_labels () const;
++
++        bool func_start_stmt_expr = false;
++
+ private:
+ 
+ 	bool depth_protect;
+diff --git a/src/CGOptions.cpp b/src/CGOptions.cpp
+index f4bda31..ce8939c 100644
+--- a/src/CGOptions.cpp
++++ b/src/CGOptions.cpp
+@@ -135,6 +135,7 @@ DEFINE_GETTER_SETTER_STRING_REF(delta_input)
+ DEFINE_GETTER_SETTER_BOOL(no_delta_reduction)
+ DEFINE_GETTER_SETTER_BOOL(math64)
+ DEFINE_GETTER_SETTER_BOOL(inline_function)
++DEFINE_GETTER_SETTER_BOOL(stmt_expr)
+ DEFINE_GETTER_SETTER_BOOL(math_notmp)
+ DEFINE_GETTER_SETTER_BOOL(longlong)
+ DEFINE_GETTER_SETTER_BOOL(int8)
+@@ -161,6 +162,7 @@ DEFINE_GETTER_SETTER_BOOL(consts)
+ DEFINE_GETTER_SETTER_BOOL(builtins)
+ DEFINE_GETTER_SETTER_BOOL(dangling_global_ptrs)
+ DEFINE_GETTER_SETTER_BOOL(divs)
++DEFINE_GETTER_SETTER_BOOL(local_labels)
+ DEFINE_GETTER_SETTER_BOOL(muls)
+ DEFINE_GETTER_SETTER_BOOL(accept_argc)
+ DEFINE_GETTER_SETTER_BOOL(random_random)
+@@ -193,6 +195,8 @@ DEFINE_GETTER_SETTER_BOOL(post_decr_operator);
+ DEFINE_GETTER_SETTER_BOOL(unary_plus_operator);
+ DEFINE_GETTER_SETTER_BOOL(use_embedded_assigns);
+ DEFINE_GETTER_SETTER_BOOL(use_comma_exprs);
++DEFINE_GETTER_SETTER_BOOL(Int128);
++DEFINE_GETTER_SETTER_BOOL(UInt128);
+ DEFINE_GETTER_SETTER_BOOL(take_union_field_addr);
+ DEFINE_GETTER_SETTER_BOOL(vol_struct_union_fields);
+ DEFINE_GETTER_SETTER_BOOL(const_struct_union_fields);
+@@ -203,6 +207,8 @@ DEFINE_GETTER_SETTER_BOOL(fast_execution);
+ DEFINE_GETTER_SETTER_BOOL(computed_goto);
+ DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
+ 
++DEFINE_GETTER_SETTER_BOOL(type_of);
++
+ void
+ CGOptions::set_default_builtin_kinds()
+ {
+@@ -259,6 +265,7 @@ CGOptions::set_default_settings(void)
+ 	compound_assignment(true);
+ 	math64(true);
+ 	inline_function(false);
++	stmt_expr(false);
+ 	math_notmp(false);
+ 	longlong(true);
+ 	int8(true);
+@@ -305,11 +312,15 @@ CGOptions::set_default_settings(void)
+ 	post_incr_operator(true);
+ 	post_decr_operator(true);
+ 	unary_plus_operator(true);
++	local_labels(false);
+ 	use_embedded_assigns(true);
+ 	use_comma_exprs(true);
+ 	take_union_field_addr(true);
+ 	vol_struct_union_fields(true);
+ 	const_struct_union_fields(true);
++	Int128(false);
++	UInt128(false);
++
+ 	addr_taken_of_locals(true);
+ 	lang_cpp(false);
+ 	cpp11(false);
+@@ -319,6 +330,7 @@ CGOptions::set_default_settings(void)
+ 	//extensions
+ 	computed_goto(false);
+ 	tm_relaxed(false);
++	type_of(false);
+ }
+ 
+ // Add options necessary for cpp 
+diff --git a/src/CGOptions.h b/src/CGOptions.h
+index 444a6bb..4a2a278 100644
+--- a/src/CGOptions.h
++++ b/src/CGOptions.h
+@@ -244,6 +244,9 @@ public:
+ 	static bool inline_function(void);
+ 	static bool inline_function(bool p);
+ 
++	static bool stmt_expr(void);
++	static bool stmt_expr(bool p);
++
+ 	static bool longlong(void);
+ 	static bool longlong(bool p);
+ 
+@@ -253,6 +256,13 @@ public:
+ 	static bool uint8(void);
+ 	static bool uint8(bool p);
+ 
++	static bool Int128(void);
++        static bool Int128(bool p);
++
++        static bool UInt128(void);
++        static bool UInt128(bool p);
++
++
+ 	static bool enable_float(void);
+ 	static bool enable_float(bool p);
+ 
+@@ -346,6 +356,10 @@ public:
+ 	static bool blind_check_global(void);
+ 	static bool blind_check_global(bool p);
+ 
++	static bool type_of(void);
++        static bool type_of(bool p);
++
++
+ 	static int stop_by_stmt(void);
+ 	static int stop_by_stmt(int p);
+ 
+@@ -464,6 +478,9 @@ public:
+ 	static bool lang_cpp(void);
+ 	static bool lang_cpp(bool p);
+ 
++	static bool local_labels(void);
++	static bool local_labels(bool p);
++
+ 	static bool cpp11(void);
+ 	static bool cpp11(bool p);
+ 
+@@ -550,10 +567,13 @@ private:
+ 	static bool	no_delta_reduction_;
+ 	static bool	math64_;
+ 	static bool	inline_function_;
++	static bool	stmt_expr_;
+ 	static bool	math_notmp_;
+ 	static bool	longlong_;
+ 	static bool	int8_;
+ 	static bool	uint8_;
++	static bool     Int128_;
++        static bool     UInt128_;
+ 	static bool	enable_float_;
+ 	static bool	strict_float_;
+ 	static bool	pointers_;
+@@ -578,6 +598,7 @@ private:
+ 	static map<string, bool> enabled_builtin_kinds_;
+ 	static bool dangling_global_ptrs_;
+ 	static bool divs_;
++	static bool local_labels_;
+ 	static bool muls_;
+ 	static bool accept_argc_;
+ 	static bool random_random_;
+@@ -593,6 +614,8 @@ private:
+ 	static bool match_exact_qualifiers_;
+ 
+ 	static int max_array_num_in_loop_;
++        static bool type_of_;
++
+ 	static bool identify_wrappers_;
+ 	static vector<int> safe_math_wrapper_ids_;
+ 	static bool mark_mutable_const_;
+diff --git a/src/CVQualifiers.cpp b/src/CVQualifiers.cpp
+index 2219d92..859ff00 100644
+--- a/src/CVQualifiers.cpp
++++ b/src/CVQualifiers.cpp
+@@ -168,7 +168,11 @@ CVQualifiers::match(const CVQualifiers& qfer) const
+ 	}
+ 	return (!accept_stricter && stricter_than(qfer)) || (accept_stricter && qfer.stricter_than(*this));
+ }
+-
++bool
++CVQualifiers::match_typeof (const CVQualifiers& qfer) const
++{
++	return is_consts == qfer.get_consts() && is_volatiles == qfer.get_volatiles();
++}
+ bool
+ CVQualifiers::match_indirect(const CVQualifiers& qfer) const
+ {
+@@ -575,6 +579,36 @@ CVQualifiers::sanity_check(const Type* t) const
+ 	assert(level >= 0);
+ 	return wildcard || (is_consts.size() == is_volatiles.size() && (static_cast<size_t>(level)+1) == is_consts.size());
+ }
++//changehere
++//removed type as not needed 
++void
++CVQualifiers::output_qualified_type_of_typeof(const Type* t, std::ostream &out) const
++{
++	assert(t);
++	assert(sanity_check(t));
++	size_t i;
++	for (i=0; i<is_consts.size(); i++) {
++		if (i>0) {
++			out << "*";
++		}
++		if (is_consts[i]) {
++			if (!CGOptions::consts())
++				assert(0);
++			if (i > 0) out << " ";
++			out << "const ";
++		}
++		if (is_volatiles[i]) {
++			if (!CGOptions::volatiles())
++				assert(0);
++			if (i > 0) out << " ";
++			out << "volatile ";
++		}
++		if (i==0) {
++			out << "typeof(" << this->get_typeof_replace_var() << ")" ;
++			out << " ";
++		}
++	}
++}
+ 
+ void
+ CVQualifiers::output_qualified_type(const Type* t, std::ostream &out) const
+@@ -719,3 +753,11 @@ CVQualifiers::output() const
+ 	}
+ 	cout << endl;
+ }
++void 
++CVQualifiers::set_typeof_replace_var(string global_var_name) const{
++        typeof_replace_var=global_var_name;
++}
++string
++CVQualifiers::get_typeof_replace_var() const{
++        return typeof_replace_var;
++}
+diff --git a/src/CVQualifiers.h b/src/CVQualifiers.h
+index b42b705..537d7d6 100644
+--- a/src/CVQualifiers.h
++++ b/src/CVQualifiers.h
+@@ -62,6 +62,7 @@ public:
+ 	bool stricter_than(const CVQualifiers& qfer) const;
+ 
+ 	bool match(const CVQualifiers& qfer) const;
++	bool match_typeof (const CVQualifiers& qfer) const;
+ 	bool match_indirect(const CVQualifiers& qfer) const;
+ 
+ 	const vector<bool>& get_consts(void) const { return is_consts;}
+@@ -87,11 +88,18 @@ public:
+ 
+ 	bool sanity_check(const Type* t) const;
+ 	void output_qualified_type(const Type* t, std::ostream &out) const;
++	//changehere
++	void output_qualified_type_of_typeof(const Type* t, std::ostream &out) const;
+ 	void output() const;
+ 	void OutputFirstQuals(std::ostream &out) const;
+ 
+ 	bool wildcard;
+ 	bool accept_stricter;
++
++//changehere
++	void set_typeof_replace_var(string global_var_name) const;
++	string get_typeof_replace_var() const;
++	mutable string typeof_replace_var="";
+ private:
+ 	// Type qualifiers.
+ 	vector<bool> is_consts;
+diff --git a/src/Constant.cpp b/src/Constant.cpp
+index 526c6cc..582ce7a 100644
+--- a/src/Constant.cpp
++++ b/src/Constant.cpp
+@@ -121,7 +121,13 @@ GenerateRandomIntConstant(void)
+ 
+ 	return val;
+ }
+-
++static string
++GenerateRandomInt128Constant(void)
++{
++	string val;
++	val = "0x" + RandomHexDigits( 16 ) ;
++	return val;
++}
+ // --------------------------------------------------------------
+ static string
+ GenerateRandomShortConstant(void)
+@@ -380,6 +386,8 @@ GenerateRandomConstant(const Type* type)
+ 			case eULong:     v = GenerateRandomLongConstant();		break;
+ 			case eULongLong: v = GenerateRandomLongLongConstant();		break;
+ 			case eFloat:     v = GenerateRandomFloatHexConstant();		break;
++			case eInt128:    v = GenerateRandomInt128Constant();		break;
++			case eUInt128:   v = GenerateRandomInt128Constant();		break;
+ 			// case eDouble:    v = GenerateRandomFloatConstant();		break;
+ 			default:
+ 				assert(0 && "Unsupported type!");
+diff --git a/src/Expression.cpp b/src/Expression.cpp
+index 5a707c8..ffa87a7 100644
+--- a/src/Expression.cpp
++++ b/src/Expression.cpp
+@@ -227,6 +227,12 @@ Expression::make_random(CGContext &cg_context, const Type* type, const CVQualifi
+ 		cg_context.expr_depth++;
+ 	}
+ 	ERROR_GUARD(NULL);
++	//we are disqualifying constant and Lhs on the right hand of operand,as they are very trival cases,ex int i=-19
++	if(CGOptions::stmt_expr()){
++		if(e->term_type !=eConstant || e->term_type != eLhs ){
++			e->expr_stmt_expr_true = true;
++		}
++	}
+ 	return e;
+ }
+ 
+@@ -302,6 +308,11 @@ Expression::make_random_param(CGContext &cg_context, const Type* type, const CVQ
+ 		cg_context.expr_depth++;
+ 	}
+ 	ERROR_GUARD(NULL);
++	if(CGOptions::stmt_expr()){
++		if(e->term_type !=eConstant || e->term_type != eLhs ){
++			e->expr_stmt_expr_true = true;
++		}
++	}
+ 	return e;
+ }
+ 
+diff --git a/src/Expression.h b/src/Expression.h
+index 64d9343..213064a 100644
+--- a/src/Expression.h
++++ b/src/Expression.h
+@@ -157,7 +157,7 @@ public:
+ 	int expr_id;
+ 
+ 	const Type* cast_type;
+-
++	bool expr_stmt_expr_true= false;
+ private:
+ 	static void InitExprProbabilityTable();
+ 	static void InitParamProbabilityTable();
+diff --git a/src/Function.cpp b/src/Function.cpp
+index 8a6875a..ef38be6 100644
+--- a/src/Function.cpp
++++ b/src/Function.cpp
+@@ -66,7 +66,9 @@
+ #include "DepthSpec.h"
+ #include "ExtensionMgr.h"
+ #include "OutputMgr.h"
+-
++#include "CFGEdge.h"
++#include "StatementGoto.h"
++#include "ArrayVariable.h"
+ using namespace std;
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+@@ -394,6 +396,8 @@ Function::Function(const string &name, const Type *return_type)
+ 	  visited_cnt(0),
+ 	  build_state(UNBUILT)
+ {
++	is_para_typeof = false;
++	is_local_typeof = false;
+ 	FuncList.push_back(this);			// Add to global list of functions.
+ }
+ 
+@@ -408,12 +412,27 @@ Function::Function(const string &name, const Type *return_type, bool builtin)
+ 	  visited_cnt(0),
+ 	  build_state(UNBUILT)
+ {
++	is_para_typeof = false;
++	is_local_typeof = false;
+ 	FuncList.push_back(this);			// Add to global list of functions.
+ }
+-
++/*
++* nearly equivalent for make_first,but called internally for except first function
++*/
+ Function *
+ Function::make_random_signature(const CGContext& cg_context, const Type* type, const CVQualifiers* qfer)
+ {
++	int prob = 0;
++	if(CGOptions::type_of())
++		prob = rnd_flipcoin(70);
++	else
++		prob = 0;
++
++	vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
++	//if global variables are present and randomly selected as true then do rest of jobs
++	int should_typeof_be_present = ( prob && globals.size()!=0 ) ;//keep value more for maximum generation
++
++
+ 	if (type == 0)
+ 		type = RandomReturnType();
+ 
+@@ -426,16 +445,28 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
+ 	CVQualifiers ret_qfer = qfer==0 ? CVQualifiers::random_qualifiers(type, Effect::READ, cg_context, true)
+ 		                            : qfer->random_qualifiers(true, Effect::READ, cg_context);
+ 	ERROR_GUARD(NULL);
++	//so the type of statement should be simple and randomly select the function for typeof is true and of cource cgoptions is set
++	// then set it for typeof= true and pass the replacing paramenters
++
+ 	f->rv = Variable::CreateVariable(rvname, type, NULL, &ret_qfer);
++
++	//changehere randomly set if typeof should be present or not for the function
++	if(type->eType == eSimple && should_typeof_be_present){
++		f->rv->is_typeof = true;		//make the variable as true
++	}
+ 	GenerateParameterList(*f);
+ 	FMList.push_back(new FactMgr(f));
+ 	if (CGOptions::inline_function() && rnd_flipcoin(InlineFunctionProb))
+ 		f->is_inlined = true;
++	if(rnd_flipcoin(66))
++		f->func_stmt_expr_true = true;
++	else
++		f->func_stmt_expr_true = false;
+ 	return f;
+ }
+ 
+ /*
+- *
++ *actually this is invoked except first function
+  */
+ Function *
+ Function::make_random(const CGContext& cg_context, const Type* type, const CVQualifiers* qfer)
+@@ -448,7 +479,7 @@ Function::make_random(const CGContext& cg_context, const Type* type, const CVQua
+ }
+ 
+ /*
+- *
++ *we are not generating typeof for first function
+  */
+ Function *
+ Function::make_first(void)
+@@ -481,6 +512,14 @@ Function::make_first(void)
+ 
+ 	// collect info about global dangling pointers
+ 	fm->find_dangling_global_ptrs(f);
++
++//does this function contain statement expressions
++	if(rnd_flipcoin(66))
++		f->func_stmt_expr_true = true;
++	else
++		f->func_stmt_expr_true = false;
++//finding the labels inside blocks in function and storing them in labels_in_block
++	store_labels_in_block(f);
+ 	return f;
+ }
+ 
+@@ -537,7 +576,11 @@ Function::OutputHeader(std::ostream &out)
+ 	if (CGOptions::force_globals_static()) {
+ 		out << "static ";
+ 	}
+-	rv->qfer.output_qualified_type(return_type, out);
++	if(rv->is_typeof)
++               rv->qfer.output_qualified_type_of_typeof(return_type, out);
++        else
++               rv->qfer.output_qualified_type(return_type, out);
++
+ 	out << " " << get_prefixed_name(name) << "(";
+ 	OutputFormalParamList( out );
+ 	out << ")";
+@@ -765,7 +808,7 @@ Function::make_builtin_function(const string &function_string)
+ 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
+ 
+ 	// create a fact manager for this function, with empty global facts
+-	FactMgr* fm = new FactMgr(f);
++	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
+ 	FMList.push_back(fm);
+ 
+ 	GenerateParameterListFromString(*f, StringUtils::get_substring(v[2], '(', ')'));
+@@ -795,7 +838,7 @@ Function::compute_summary(void)
+ 	// determine whether an union field is read
+ 	union_field_read = body->read_union_field();
+ }
+-
++//CHANGEHERE
+ /*
+  *
+  */
+@@ -814,6 +857,16 @@ GenerateFunctions(void)
+ 	/*only for block 0,as __tm_* will be for first block else could cause some goto into the __tm_* ,which causes UB.
+ 	*/
+ 
++	// -----------------
++	// Create body of each function, continue until no new functions are created.
++	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {
++		// Dynamically adds new functions to the end of the list..
++		if (FuncList[cur_func_idx]->is_built() == false) {
++			FuncList[cur_func_idx]->GenerateBody(CGContext::get_empty_context());
++			ERROR_RETURN();
++		}
++	}
++
+ 	if(CGOptions::tm_relaxed()){
+ 		//need to select at least one so for CLI options add '1'
+ 		unsigned int count_tm_relaxed = rnd_upto(FuncListSize()) + 1 ;//if size=10 then 1,2,....10 as 1 is added 
+@@ -825,15 +878,20 @@ GenerateFunctions(void)
+ 			}
+ 		}
+ 	}
+-	// -----------------
+-	// Create body of each function, continue until no new functions are created.
+-	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {
+-		// Dynamically adds new functions to the end of the list..
+-		if (FuncList[cur_func_idx]->is_built() == false) {
+-			FuncList[cur_func_idx]->GenerateBody(CGContext::get_empty_context());
+-			ERROR_RETURN();
++	if (CGOptions::stmt_expr()){
++		for (int i =0 ;i < FuncList.size() ; i++){
++			if(FuncList[i]->func_stmt_expr_true){
++				Block *zero_blk = FuncList[i]->blocks[0];
++				zero_blk -> func_start_stmt_expr = true;
++			}
+ 		}
+ 	}
++
++	if(CGOptions::type_of()){
++		typeof_on_return_values ();//compulsorily generate for return types, so atleast something comes in program
++		typeof_on_func_parameters ();//but can/cannot for parameter types
++		typeof_on_local_variables();
++	}
+ 	FactPointTo::aggregate_all_pointto_sets();
+ 	ExtensionMgr::GenerateValues();
+ }
+@@ -932,6 +990,232 @@ Function::~Function()
+ 	}
+ }
+ 
++void
++store_labels_in_block(const Function *f){
++       FactMgr* fm= get_fact_mgr_for_func(f);
++       vector<const CFGEdge*> local_cfg_edges_goto;
++       local_cfg_edges_goto.clear();
++       for (int i =0 ;i < fm->cfg_edges.size(); i++){
++               if(fm->cfg_edges[i]->src->eType == eGoto){
++                       local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
++               }
++       }
++       for (int i=0;i<local_cfg_edges_goto.size();i++){
++               StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
++               Block *blk = local_cfg_edges_goto[i]->dest->parent;
++               Block *goto_block = sg->parent;
++               if(CGOptions::local_labels()){
++                       while(goto_block != f->blocks[0]){
++                               if(goto_block == blk){
++                                       blk->contains_label = true;
++                                       break;
++                               }
++                               goto_block = goto_block -> parent;
++                       }
++                       if(goto_block == f->blocks[0] && goto_block == blk){
++                               blk->contains_label = true;
++                       }
++/*
++                       if(blk!= sg->parent)
++                               blk->contains_label = true;
++*/
++               }
++               else
++
++                       blk->contains_label = true;
++               std::vector<string>::iterator itr;
++               itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
++               if(!(itr != blk->labels_in_block.end())){
++                       blk->labels_in_block.push_back(sg->label);
++               }
++       }
++       for (int i=0; i< f->blocks.size() ; i++){
++               Block* b = f->blocks[i];
++               if(b!=f->blocks[0] && b->contains_label){
++                       while(b!=f->blocks[0]){
++                               b->contains_label = true;
++                               b=b->parent;
++                      }
++               }
++       }
++}
++
++//changehere
++
++Variable *
++Function::find_global_to_insert_in_typeof(const Variable *para){       //now set values in qfer and not variable
++       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
++       int global_count = globals.size();
++       while(global_count > 0){
++               int index_of_global_var = rnd_upto(globals.size());
++               if(globals[index_of_global_var]->type == para->type && globals[index_of_global_var]->qfer.match_typeof(para->qfer) && globals[index_of_global_var]->type->eType == eSimple){
++                       /*remianing to send type(only for pointer,search for what more?) will do once everything is working*/
++                       //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
++                       return globals[index_of_global_var];
++               }
++       global_count--;
++       }
++       return NULL;       //element not found for the number of times we looped| element is not present
++}
++
++//changehere
++void typeof_on_return_values(){
++
++       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
++       for (int i =0; i< FuncList.size(); i++){
++               int global_count = globals.size();
++               int flag=0;
++               if(FuncList[i]->rv->is_typeof){
++                       const Type *return_type = FuncList[i]->rv->type;
++                       while(global_count > 0){
++                               int index_of_global_var = rnd_upto(globals.size());
++                               if(globals[index_of_global_var]->type == return_type && globals[index_of_global_var]->type->eType == eSimple ){
++                                       if(!globals[index_of_global_var]->is_array_field())
++                                               FuncList[i]->rv->qfer.set_typeof_replace_var(globals[index_of_global_var]->get_actual_name());
++                                       else{
++                                               ostringstream ss;
++                                               ss.clear();
++                                               std::vector<unsigned int> sizes;
++                                               sizes.clear();//clear the sizes vector, so no previous values persist
++                                               ss << globals[index_of_global_var]->get_actual_name();
++
++                                               ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
++                                               sizes = av->get_sizes();
++                                               for (int i=0; i< sizes.size() ; i++){
++                                                       ss << "[" << sizes[i] << "]";
++                                               }
++                                               FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
++                                       }
++                                       /*remianing to send type(only for pointer,search for what more?) will do once everything is */
++                                       //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
++                                       flag=1;//indicates typeof is surely going to be present
++                                       break;
++                               }
++                       global_count--;
++                       }
++                       if(flag!=1){
++                               FuncList[i]->rv->is_typeof=false;//we are now removing the tag of typeof from function,as nothing found
++                       }
++               }
++       }
++
++}
++void typeof_on_func_parameters(){
++       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
++
++       if(globals.size() > 0 && FuncList.size() > 1){
++               int cnt_func_para_typeof = rnd_upto(FuncList.size());
++               for (int i = 0; i< cnt_func_para_typeof ; i++){
++                       int idx_func = rnd_upto(FuncList.size());
++                       if(FuncList[idx_func]->param.size() != 0 ){
++                               FuncList[idx_func]->is_para_typeof = true;//IMP
++
++                               int cnt_para_with_typeof = rnd_upto(FuncList[idx_func]->param.size());
++                               if(cnt_para_with_typeof == 0)
++                                       cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
++
++                               int flag =0 ;
++                               while(cnt_para_with_typeof > 0){
++                                       int indx_para = rnd_upto(FuncList[idx_func]->param.size());
++                                       Variable *para = FuncList[idx_func]->param[indx_para];
++                                       //cout << "\n para " << para->name;
++                                       Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(para);
++                                       if(glob_replace_var !=  NULL){
++                                               flag =1;
++                                               para->is_typeof_used_param  = true;
++                                
++                                               if(!glob_replace_var->is_array_field()){
++                                                       para->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
++                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
++                                               }
++                                               else{
++                                                       ostringstream ss;
++                                                       ss.clear();
++                                                       std::vector<unsigned int> sizes;
++                                                       sizes.clear();//clear the sizes vector, so no previous values persist
++                                                       ss << glob_replace_var->get_actual_name();
++
++                                                       ArrayVariable *av = (ArrayVariable*)glob_replace_var;
++                                                       sizes = av->get_sizes();
++                                                       for (int i=0; i< sizes.size() ; i++){
++                                                               ss << "[" << sizes[i] << "]";
++                                                       }
++                                                       //cout << "replace var" << ss.str();
++                                                       para->qfer.set_typeof_replace_var(ss.str());
++                                               }
++                                       }
++                               cnt_para_with_typeof--;
++                               }
++                               if( flag==0 ){
++                                       FuncList[idx_func]->is_para_typeof = false;
++                               }
++                       }
++               }
++       }
++}
++void typeof_on_local_variables(){
++       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
++
++       if(globals.size() > 0 && FuncList.size() > 1){
++               int cnt_func_local_typeof = rnd_upto(FuncList.size());
++//             cout << "\nnarla " << cnt_func_local_typeof;
++               for (int i = 0; i< cnt_func_local_typeof ; i++){
++                       int idx_func = rnd_upto(FuncList.size());
++//cout << "\nboo" << FuncList[idx_func]->name;
++                       if(FuncList[idx_func]->blocks.size() != 0 ){//obviously this won't happen as always atleast 1 block
++                               FuncList[idx_func]->is_local_typeof = true;//IMP
++                               int cnt_blocks_with_typeof = rnd_upto(FuncList[idx_func]->blocks.size());
++//cout << "from total " << FuncList[idx_func]->blocks.size() << "selected are " << cnt_blocks_with_typeof;
++//                             if(cnt_para_with_typeof == 0)
++//                                     cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
++
++                               int flag =0 ;
++                               while(cnt_blocks_with_typeof > 0){
++                                       int indx_block = rnd_upto(FuncList[idx_func]->blocks.size());//========ok
++                               if(FuncList[idx_func]->blocks[indx_block]->local_vars.size() > 0){
++
++                                       int temp_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
++
++                                       for(int i=0; i<temp_local_var; i++){
++                                       int random_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
++                                       Variable *local = FuncList[idx_func]->blocks[indx_block]->local_vars[random_local_var];//
++                                       //cout << "\n para " << para->name;
++                                       Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(local);
++                                       if(glob_replace_var !=  NULL){
++                                               flag =1;
++                                               local->is_typeof_used_local  = true;
++
++                                               if(!glob_replace_var->is_array_field()){
++                                                       local->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
++                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
++                                               }
++                                               else{
++                                                       ostringstream ss;
++                                                       ss.clear();
++                                                       std::vector<unsigned int> sizes;
++                                                       sizes.clear();//clear the sizes vector, so no previous values persist
++                                                       ss << glob_replace_var->get_actual_name();
++
++                                                       ArrayVariable *av = (ArrayVariable*)glob_replace_var;
++                                                       sizes = av->get_sizes();
++                                                       for (int i=0; i< sizes.size() ; i++){
++                                                               ss << "[" << sizes[i] << "]";
++                                                       }
++                                                       //cout << "replace var" << ss.str();
++                                                       local->qfer.set_typeof_replace_var(ss.str());
++                                               }
++                                       }
++                                       }
++                               }
++                               cnt_blocks_with_typeof--;
++                               }
++                               if( flag==0 ){
++                                       FuncList[idx_func]->is_local_typeof = false;
++                               }
++                       }
++               }
++       }
++}
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+diff --git a/src/Function.h b/src/Function.h
+index 4e48ba7..0704435 100644
+--- a/src/Function.h
++++ b/src/Function.h
+@@ -57,6 +57,10 @@ class Fact;
+ class Constant;
+ class CVQualifiers;
+ 
++//changehere
++void typeof_on_return_values();
++void typeof_on_func_parameters();
++void typeof_on_local_variables();
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ class Function
+@@ -123,6 +127,11 @@ public:
+ 	int  visited_cnt;
+ 
+ 	Effect accum_eff_context;
++	//extension
++	bool func_stmt_expr_true = false;
++        Variable* find_global_to_insert_in_typeof(const Variable *para);
++        bool is_para_typeof ;
++        bool is_local_typeof;
+ 
+ private:
+ 	static int deleteFunction(Function* func);
+@@ -155,7 +164,7 @@ FactMgr* get_fact_mgr(const CGContext* cg);
+ const Function* find_function_by_name(const string& name);
+ int find_function_in_set(const vector<const Function*>& set, const Function* f);
+ const Block* find_blk_for_var(const Variable* v);
+-
++void store_labels_in_block(const Function *f);
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ #endif // FUNCTION_H
+diff --git a/src/FunctionInvocationUser.cpp b/src/FunctionInvocationUser.cpp
+index d52b8bd..b97423b 100644
+--- a/src/FunctionInvocationUser.cpp
++++ b/src/FunctionInvocationUser.cpp
+@@ -248,6 +248,7 @@ FunctionInvocationUser::build_invocation_and_function(CGContext &cg_context, con
+ 	}
+ 
+ 	func->visited_cnt = 1;
++	store_labels_in_block(func);
+ 	return fiu;
+ }
+ 
+diff --git a/src/Probabilities.cpp b/src/Probabilities.cpp
+index beea841..a91957d 100644
+--- a/src/Probabilities.cpp
++++ b/src/Probabilities.cpp
+@@ -655,6 +655,13 @@ Probabilities::set_default_safe_ops_size_prob()
+ 		SET_SINGLE_NAME1("safe_ops_size_int8", Int8, 0);
+ 	}
+ 
++/*	if (CGOptions::Int128() ) {
++		SET_SINGLE_NAME1("safe_ops_size_Int128", Int128, 1);
++	}
++	else {
++		SET_SINGLE_NAME1("safe_ops_size_Int128", Int128, 0);
++	}
++*/
+ 	SET_SINGLE_NAME1("safe_ops_size_int16", Int16, 1);
+ 	SET_SINGLE_NAME1("safe_ops_size_int32", Int32, 1);
+ 	if (CGOptions::allow_int64()) {
+@@ -677,6 +684,21 @@ Probabilities::set_default_simple_types_prob()
+ 	// We only use void for function's parameter, so
+ 	// disallow choosing void type from other places
+ 	SET_SINGLE_NAME("void_prob", Void, 0);
++	if (CGOptions::Int128()) {
++		SET_SINGLE_NAME("Int128_prob", Int128, 1);
++	}
++	else {
++		SET_SINGLE_NAME("Int128_prob", Int128, 0);
++	}
++
++	 if (CGOptions::UInt128()) {
++                SET_SINGLE_NAME("UInt128_prob", UInt128, 1);
++        }
++        else {
++                SET_SINGLE_NAME("UInt128_prob", UInt128, 0);
++        }
++
++
+ 	if (CGOptions::int8()) {
+ 		SET_SINGLE_NAME("char_prob", Char, 1);
+ 	}
+@@ -818,7 +840,6 @@ Probabilities::set_default_statement_prob()
+ 	}
+ 	// use the remaining probabilities for assignments
+ 	SET_SINGLE_NAME("statement_assign_prob", Assign, 100);
+-
+ 	set_group_prob(false, pStatementProb, m);
+ }
+ 
+diff --git a/src/Probabilities.h b/src/Probabilities.h
+index be483c5..7190b17 100644
+--- a/src/Probabilities.h
++++ b/src/Probabilities.h
+@@ -139,6 +139,8 @@ enum ProbName {
+ 	pULongProb,
+ 	pULongLongProb,
+ 	pFloatProb,
++	pUInt128Prob,
++	pInt128Prob,
+ 
+ 	// for safe math ops
+ 	pSafeOpsSizeProb,
+diff --git a/src/RandomProgramGenerator.cpp b/src/RandomProgramGenerator.cpp
+index 1ad6ef3..af83ccd 100644
+--- a/src/RandomProgramGenerator.cpp
++++ b/src/RandomProgramGenerator.cpp
+@@ -170,16 +170,20 @@ static void print_help()
+ 	cout << "  --longlong| --no-longlong: enable | disable long long (enabled by default)." << endl << endl;
+ 	cout << "  --int8 | --no-int8: enable | disable int8_t (enabled by default)." << endl << endl;
+ 	cout << "  --uint8 | --no-uint8: enable | disable uint8_t (enabled by default)." << endl << endl;
++	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
++        cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+ 	cout << "  --float | --no-float: enable | disable float (disabled by default)." << endl << endl;
+ 	cout << "  --main | --nomain: enable | disable to generate main function (enabled by default)." << endl <<  endl;
++	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
+ 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
++	cout << "  --local-labels | --no-local-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+ 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
+ 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
+ 
+ 	//extensions 
+ 	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
+ 	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
+-
++	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+ 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
+@@ -583,6 +587,18 @@ main(int argc, char **argv)
+ 		}
+ //***********
+ 
++
++		if (strcmp (argv[i], "--typeof") == 0) {
++			CGOptions::type_of(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-typeof") == 0) {
++			CGOptions::type_of(false);
++			continue;
++		}
++//***********
++
+ 		if (strcmp (argv[i], "--structs") == 0) {
+ 			CGOptions::use_struct(true);
+ 			continue;
+@@ -770,6 +786,16 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if(strcmp (argv[i], "--stmt_expr") == 0){
++			CGOptions::stmt_expr(true);
++			continue;
++		}
++
++		if(strcmp (argv[i], "--no-stmt_expr") == 0){
++			CGOptions::stmt_expr(false);
++			continue;
++		}
++
+ 		if (strcmp (argv[i], "--longlong") == 0) {
+ 			CGOptions::longlong(true);
+ 			continue;
+@@ -790,6 +816,16 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--local-labels") == 0) {
++			CGOptions::local_labels(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-local-labels") == 0) {
++			CGOptions::local_labels(false);
++			continue;
++		}
++
+ 		if (strcmp (argv[i], "--uint8") == 0) {
+ 			CGOptions::uint8(true);
+ 			continue;
+@@ -800,6 +836,27 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--int128") == 0) {
++                        CGOptions::Int128(true);
++                        continue;
++                }
++
++                if (strcmp (argv[i], "--no-int128") == 0) {
++                        CGOptions::Int128(false);
++                        continue;
++                }
++
++                if (strcmp (argv[i], "--uint128") == 0) {
++                        CGOptions::UInt128(true);
++                        continue;
++                }
++
++                if (strcmp (argv[i], "--no-uint128") == 0) {
++                        CGOptions::UInt128(false);
++			continue;
++		}
++
++
+ 		if (strcmp (argv[i], "--float") == 0) {
+ 			CGOptions::enable_float(true);
+ 			continue;
+@@ -875,6 +932,7 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++
+ 		if (strcmp (argv[i], "--no-jumps") == 0) {
+ 			CGOptions::jumps(false);
+ 			continue;
+diff --git a/src/SafeOpFlags.cpp b/src/SafeOpFlags.cpp
+index 5f5111f..8fe1ea5 100644
+--- a/src/SafeOpFlags.cpp
++++ b/src/SafeOpFlags.cpp
+@@ -96,6 +96,7 @@ SafeOpFlags::flags_to_type(bool sign, enum SafeOpSize size)
+ 		case sInt16: return eUShort;
+ 		case sInt32: return eUInt;
+ 		case sInt64: return eULongLong;
++	//*add when unsigned added*//
+ 		default: assert(0); break;
+ 		}
+ 	}
+diff --git a/src/StatementAssign.cpp b/src/StatementAssign.cpp
+index cdbe436..4e6a24e 100644
+--- a/src/StatementAssign.cpp
++++ b/src/StatementAssign.cpp
+@@ -488,7 +488,15 @@ StatementAssign::OutputSimple(std::ostream &out) const
+ 		out << " ";
+ 		output_op(out);
+ 		out << " ";
+-		expr.Output(out);
++		//termtype!=0 indicates no assigning of constants
++		if (expr.expr_stmt_expr_true && expr.term_type!=0 && CGOptions::stmt_expr()){
++				out << " ({ ";
++				expr.Output(out);
++				out << " ; }) ";
++		}
++		else{
++			expr.Output(out);
++		}
+ 		break;
+ 
+ 	case ePreIncr:
+@@ -528,6 +536,12 @@ StatementAssign::OutputAsExpr(std::ostream &out) const
+ 				out << " " << FunctionInvocationBinary::get_binop_string(bop) << " ";
+ 				expr.Output(out);
+ 			}
++			else if (expr.expr_stmt_expr_true && CGOptions::stmt_expr()){
++				output_op(out);
++				out << " ({ ";
++				expr.Output(out);
++				out << " ; }) ";
++			}
+ 			else {
+ 				output_op(out);
+ 				out << " ";
+diff --git a/src/StatementFor.cpp b/src/StatementFor.cpp
+index 30fb7c1..f4afe0d 100644
+--- a/src/StatementFor.cpp
++++ b/src/StatementFor.cpp
+@@ -253,7 +253,6 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
+ 
+ 	Constant * c_incr = Constant::make_int(incr_n);
+ 	ERROR_GUARD_AND_DEL3(NULL, init, test, lhs1);
+-
+ 	if (bound != INVALID_BOUND) {
+ 		incr = new StatementAssign(cg_context.get_current_block(), *lhs1, *c_incr, incr_op);
+ 	} else {
+@@ -288,6 +287,14 @@ StatementFor::make_random(CGContext &cg_context)
+ 
+ 	StatementFor* sf = new StatementFor(cg_context.get_current_block(), *init, *test, *incr, *body);
+ 	sf->post_loop_analysis(cg_context, pre_facts, pre_effects);
++
++	if(CGOptions::stmt_expr()){
++		const StatementAssign *increment = sf->get_incr();
++		const Expression* rhs_expr = increment->get_rhs();
++		if(rhs_expr->term_type == eFunction){
++			sf->for_stmt_expr_true = true;
++		}
++	}
+ 	return sf;
+ }
+ 
+@@ -400,7 +407,14 @@ StatementFor::output_header(std::ostream& out, int indent) const
+ 	out << "; ";
+ 	test.Output(out);
+ 	out << "; ";
+-	incr.OutputAsExpr(out);
++	if(this->for_stmt_expr_true && CGOptions::stmt_expr()){
++		out << " ({ ";
++		incr.OutputAsExpr(out);
++		out << ";";
++		out << " })";
++	}
++	else
++		incr.OutputAsExpr(out);
+ 	out << ")";
+ 	outputln(out);
+ }
+diff --git a/src/StatementFor.h b/src/StatementFor.h
+index 74183d3..aa5ad5f 100644
+--- a/src/StatementFor.h
++++ b/src/StatementFor.h
+@@ -77,6 +77,7 @@ public:
+ 
+ 	virtual void Output(std::ostream &out, FactMgr* fm, int indent = 0) const;
+ 
++	bool for_stmt_expr_true = false;
+ private:
+ 	// XXX --- `init' and `incr' have the "wrong types."  Should be exprs.
+ 	const StatementAssign &init;
+diff --git a/src/Type.cpp b/src/Type.cpp
+index 73f7858..04625c0 100644
+--- a/src/Type.cpp
++++ b/src/Type.cpp
+@@ -430,6 +430,12 @@ Type::get_type_from_string(const string &type_string)
+ 	else if (type_string == "Float") {
+ 		return &Type::get_simple_type(eFloat);
+ 	}
++	else if (type_string == "Int128") {
++		return &Type::get_simple_type(eInt128);
++	}
++	else if (type_string == "UInt128") {
++		return &Type::get_simple_type(eUInt128);
++	}
+ 
+ 	assert(0 && "Unsupported type string!");
+ 	return NULL;
+@@ -1424,6 +1430,8 @@ Type::to_unsigned(void) const
+ 			case eShort: return &get_simple_type(eUShort);
+ 			case eLong: return &get_simple_type(eULong);
+ 			case eLongLong: return &get_simple_type(eULongLong);
++			case eInt128: return &get_simple_type(eInt128);
++			case eUInt128: return &get_simple_type(eUInt128);
+ 			default:
+ 				break;
+ 		}
+@@ -1581,16 +1589,18 @@ Type::SizeInBytes(void) const
+ 		switch (simple_type) {
+ 		case eVoid:		return 0;
+ 		case eInt:		return 4;
+-		case eShort:	return 2;
++		case eShort:		return 2;
+ 		case eChar:		return 1;
+ 		case eLong:		return 4;
+-		case eLongLong:	return 8;
+-		case eUChar:	return 1;
++		case eLongLong:		return 8;
++		case eUChar:		return 1;
+ 		case eUInt:		return 4;
+-		case eUShort:	return 2;
+-		case eULong:	return 4;
+-		case eULongLong:return 8;
+-		case eFloat:	return 4;
++		case eUShort:		return 2;
++		case eULong:		return 4;
++		case eULongLong:	return 8;
++		case eFloat:		return 4;
++		case eInt128: 		return 16;
++		case eUInt128: 		return 16;
+ //		case eDouble:	return 8;
+ 		}
+ 		break;
+@@ -1720,10 +1730,21 @@ Type::Output(std::ostream &out) const
+ 			out << "void";
+ 		} else if (this->simple_type == eFloat) {
+ 		        out << "float";
+-		} else {
++		}
++		else {
++			if(this->simple_type == eInt128){
++				out << "__int";
++				out << (SizeInBytes() * 8);
++			}
++			else if(this->simple_type == eUInt128){
++				out << "unsigned __int";
++				out << (SizeInBytes() * 8);
++			}
++			else{
+ 			out << (is_signed() ? "int" : "uint");
+ 			out << (SizeInBytes() * 8);
+ 			out << "_t";
++			}
+ 		}
+ 		break;
+ 	case ePointer:   ptr_type->Output( out ); out << "*"; break;
+diff --git a/src/Type.h b/src/Type.h
+index 720f0b3..1e3294c 100644
+--- a/src/Type.h
++++ b/src/Type.h
+@@ -83,8 +83,10 @@ enum eSimpleType
+ 	eFloat,
+ 	// eDouble,
+ 	eULongLong,
++	eUInt128,
++	eInt128,
+ };
+-#define MAX_SIMPLE_TYPES ((eSimpleType) (eULongLong+1))
++#define MAX_SIMPLE_TYPES ((eSimpleType) (eInt128+1))
+ 
+ enum eMatchType
+ {
+diff --git a/src/Variable.cpp b/src/Variable.cpp
+index c42d96c..871ea01 100644
+--- a/src/Variable.cpp
++++ b/src/Variable.cpp
+@@ -436,6 +436,7 @@ Variable::Variable(const std::string &name, const Type *type,
+ 	  qfer(isConsts, isVolatiles)
+ {
+ 	// nothing else to do
++	is_typeof=false;
+ }
+ 
+ /*
+@@ -462,6 +463,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression*
+ 	  qfer(*qfer)
+ {
+ 	// nothing else to do
++	is_typeof=false;
+ }
+ 
+ /*
+@@ -676,6 +678,7 @@ Variable::OutputDef(std::ostream &out, int indent) const
+ 		out << "static ";
+ 	}
+ 	output_qualified_type(out);
++
+ 	out << get_actual_name() << " = ";
+ 	assert(init);
+ 	init->Output(out);
+@@ -695,7 +698,7 @@ void Variable::OutputDecl(std::ostream &out) const
+ 		out << "static ";
+ 	}
+ 	output_qualified_type(out);
+-	out << get_actual_name();
++	out << get_actual_name() ;
+ }
+ 
+ std::string
+@@ -748,7 +751,10 @@ Variable::OutputForComment(std::ostream &out) const
+ void
+ Variable::output_qualified_type(std::ostream &out) const
+ {
+-	qfer.output_qualified_type(type, out);
++	if(this->is_typeof_used_param || this->is_typeof_used_local)
++		qfer.output_qualified_type_of_typeof(type, out);
++	else
++		qfer.output_qualified_type(type , out);
+ }
+ 
+ // --------------------------------------------------------------
+@@ -926,6 +932,7 @@ OutputVariableDeclList(const vector<Variable*> &var, std::ostream &out, std::str
+ {
+ 	// have to use iterator instead of map because we need indent as paramter
+ 	for (size_t i=0; i<var.size(); i++) {
++		cout << "\t " << var[i]->name;
+ 		output_tab(out, indent);
+ 		out << prefix;
+ 		var[i]->OutputDecl(out);
+diff --git a/src/Variable.h b/src/Variable.h
+index 40a68d5..91b18d2 100644
+--- a/src/Variable.h
++++ b/src/Variable.h
+@@ -159,7 +159,10 @@ public:
+ 	static std::vector<const Variable*> &get_last_ctrl_vars();
+ 
+ 	static const char sink_var_name[];
+-
++//changehere
++	bool is_typeof= false;
++	bool is_typeof_used_param = false;
++	bool is_typeof_used_local = false;
+ private:
+ 	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
+ 	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const Variable* isFieldVarOf, bool isArray);
+diff --git a/src/VariableSelector.cpp b/src/VariableSelector.cpp
+index 02ef82a..322a13b 100644
+--- a/src/VariableSelector.cpp
++++ b/src/VariableSelector.cpp
+@@ -553,6 +553,7 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
+ 	}
+ 	var_created = true;
+ 	return var;
++
+ }
+ 
+ Variable *
