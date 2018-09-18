@@ -322,7 +322,16 @@ void
 Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 {
 	output_tab(out, indent);
-	out << "{ ";
+	out << "{";
+
+	if(CGOptions::stmt_expr()){
+		outputln(out);
+		indent++;
+		if(this->func_start_stmt_expr || (!this->contains_label) ){
+			output_tab(out, indent);
+			out << "({";
+		}
+	}
 	std::ostringstream ss;
 	ss << "block id: " << stm_id;
 	output_comment_line(out, ss.str());
@@ -343,7 +352,17 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH++;" << endl;
 	}
-
+	if(CGOptions::local_labels()){
+		if( this->contains_label && !(this->labels_in_block.empty()) ){
+			indent++;
+			output_tab(out , indent);
+			out << "__label__ ";
+			outputlocal_labels();
+			out << ";";
+			outputln(out);
+			indent--;
+		}
+	}
 	indent++;
 	if (CGOptions::math_notmp())
 		OutputTmpVariableList(out, indent);
@@ -354,7 +373,6 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH--;" << endl;
 	}
-	indent--;
 
 	if (this->contains_tm_relaxed == 1){
 		output_tab(out, indent);
@@ -362,6 +380,16 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 		outputln(out);
 	}
 
+       if(CGOptions::stmt_expr()){
+               if(this->func_start_stmt_expr || ! (this->contains_label) ){
+                       indent--;
+                       outputln(out);
+                       output_tab(out, indent);
+                       out << "});" ;
+               }
+       }
+       outputln(out);
+       indent--;
 
 	output_tab(out, indent);
 	out << "}";
@@ -870,7 +898,17 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
 
 	cout << "};\n";
 }
-
+void
+Block::outputlocal_labels () const{
+		for (int i =0 ;i < this->labels_in_block.size(); i++){
+			if (i == 0)
+				std::cout << this->labels_in_block[i];
+			else{
+				std::cout << " , ";
+				std::cout << this->labels_in_block[i];
+			}
+		}
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 // Local Variables:

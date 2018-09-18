@@ -436,6 +436,7 @@ Variable::Variable(const std::string &name, const Type *type,
 	  qfer(isConsts, isVolatiles)
 {
 	// nothing else to do
+	is_typeof=false;
 }
 
 /*
@@ -462,6 +463,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  qfer(*qfer)
 {
 	// nothing else to do
+	is_typeof=false;
 }
 
 /*
@@ -676,6 +678,7 @@ Variable::OutputDef(std::ostream &out, int indent) const
 		out << "static ";
 	}
 	output_qualified_type(out);
+
 	out << get_actual_name() << " = ";
 	assert(init);
 	init->Output(out);
@@ -695,7 +698,7 @@ void Variable::OutputDecl(std::ostream &out) const
 		out << "static ";
 	}
 	output_qualified_type(out);
-	out << get_actual_name();
+	out << get_actual_name() ;
 }
 
 std::string
@@ -748,7 +751,10 @@ Variable::OutputForComment(std::ostream &out) const
 void
 Variable::output_qualified_type(std::ostream &out) const
 {
-	qfer.output_qualified_type(type, out);
+	if(this->is_typeof_used_param || this->is_typeof_used_local)
+		qfer.output_qualified_type_of_typeof(type, out);
+	else
+		qfer.output_qualified_type(type , out);
 }
 
 // --------------------------------------------------------------
@@ -926,6 +932,7 @@ OutputVariableDeclList(const vector<Variable*> &var, std::ostream &out, std::str
 {
 	// have to use iterator instead of map because we need indent as paramter
 	for (size_t i=0; i<var.size(); i++) {
+		cout << "\t " << var[i]->name;
 		output_tab(out, indent);
 		out << prefix;
 		var[i]->OutputDecl(out);

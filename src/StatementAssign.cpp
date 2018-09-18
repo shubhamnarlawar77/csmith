@@ -488,7 +488,15 @@ StatementAssign::OutputSimple(std::ostream &out) const
 		out << " ";
 		output_op(out);
 		out << " ";
-		expr.Output(out);
+		//termtype!=0 indicates no assigning of constants
+		if (expr.expr_stmt_expr_true && expr.term_type!=0 && CGOptions::stmt_expr()){
+				out << " ({ ";
+				expr.Output(out);
+				out << " ; }) ";
+		}
+		else{
+			expr.Output(out);
+		}
 		break;
 
 	case ePreIncr:
@@ -527,6 +535,12 @@ StatementAssign::OutputAsExpr(std::ostream &out) const
 				lhs.Output(out);
 				out << " " << FunctionInvocationBinary::get_binop_string(bop) << " ";
 				expr.Output(out);
+			}
+			else if (expr.expr_stmt_expr_true && CGOptions::stmt_expr()){
+				output_op(out);
+				out << " ({ ";
+				expr.Output(out);
+				out << " ; }) ";
 			}
 			else {
 				output_op(out);

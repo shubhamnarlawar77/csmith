@@ -253,7 +253,6 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
 
 	Constant * c_incr = Constant::make_int(incr_n);
 	ERROR_GUARD_AND_DEL3(NULL, init, test, lhs1);
-
 	if (bound != INVALID_BOUND) {
 		incr = new StatementAssign(cg_context.get_current_block(), *lhs1, *c_incr, incr_op);
 	} else {
@@ -288,6 +287,14 @@ StatementFor::make_random(CGContext &cg_context)
 
 	StatementFor* sf = new StatementFor(cg_context.get_current_block(), *init, *test, *incr, *body);
 	sf->post_loop_analysis(cg_context, pre_facts, pre_effects);
+
+	if(CGOptions::stmt_expr()){
+		const StatementAssign *increment = sf->get_incr();
+		const Expression* rhs_expr = increment->get_rhs();
+		if(rhs_expr->term_type == eFunction){
+			sf->for_stmt_expr_true = true;
+		}
+	}
 	return sf;
 }
 
@@ -400,7 +407,14 @@ StatementFor::output_header(std::ostream& out, int indent) const
 	out << "; ";
 	test.Output(out);
 	out << "; ";
-	incr.OutputAsExpr(out);
+	if(this->for_stmt_expr_true && CGOptions::stmt_expr()){
+		out << " ({ ";
+		incr.OutputAsExpr(out);
+		out << ";";
+		out << " })";
+	}
+	else
+		incr.OutputAsExpr(out);
 	out << ")";
 	outputln(out);
 }

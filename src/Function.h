@@ -57,6 +57,10 @@ class Fact;
 class Constant;
 class CVQualifiers;
 
+//changehere
+void typeof_on_return_values();
+void typeof_on_func_parameters();
+void typeof_on_local_variables();
 ///////////////////////////////////////////////////////////////////////////////
 
 class Function
@@ -123,6 +127,11 @@ public:
 	int  visited_cnt;
 
 	Effect accum_eff_context;
+	//extension
+	bool func_stmt_expr_true = false;
+        Variable* find_global_to_insert_in_typeof(const Variable *para);
+        bool is_para_typeof ;
+        bool is_local_typeof;
 
 private:
 	static int deleteFunction(Function* func);
@@ -155,7 +164,7 @@ FactMgr* get_fact_mgr(const CGContext* cg);
 const Function* find_function_by_name(const string& name);
 int find_function_in_set(const vector<const Function*>& set, const Function* f);
 const Block* find_blk_for_var(const Variable* v);
-
+void store_labels_in_block(const Function *f);
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // FUNCTION_H

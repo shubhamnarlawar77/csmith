@@ -157,7 +157,7 @@ public:
 	int expr_id;
 
 	const Type* cast_type;
-
+	bool expr_stmt_expr_true= false;
 private:
 	static void InitExprProbabilityTable();
 	static void InitParamProbabilityTable();

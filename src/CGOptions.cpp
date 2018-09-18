@@ -135,6 +135,7 @@ DEFINE_GETTER_SETTER_STRING_REF(delta_input)
 DEFINE_GETTER_SETTER_BOOL(no_delta_reduction)
 DEFINE_GETTER_SETTER_BOOL(math64)
 DEFINE_GETTER_SETTER_BOOL(inline_function)
+DEFINE_GETTER_SETTER_BOOL(stmt_expr)
 DEFINE_GETTER_SETTER_BOOL(math_notmp)
 DEFINE_GETTER_SETTER_BOOL(longlong)
 DEFINE_GETTER_SETTER_BOOL(int8)
@@ -161,6 +162,7 @@ DEFINE_GETTER_SETTER_BOOL(consts)
 DEFINE_GETTER_SETTER_BOOL(builtins)
 DEFINE_GETTER_SETTER_BOOL(dangling_global_ptrs)
 DEFINE_GETTER_SETTER_BOOL(divs)
+DEFINE_GETTER_SETTER_BOOL(local_labels)
 DEFINE_GETTER_SETTER_BOOL(muls)
 DEFINE_GETTER_SETTER_BOOL(accept_argc)
 DEFINE_GETTER_SETTER_BOOL(random_random)
@@ -193,6 +195,8 @@ DEFINE_GETTER_SETTER_BOOL(post_decr_operator);
 DEFINE_GETTER_SETTER_BOOL(unary_plus_operator);
 DEFINE_GETTER_SETTER_BOOL(use_embedded_assigns);
 DEFINE_GETTER_SETTER_BOOL(use_comma_exprs);
+DEFINE_GETTER_SETTER_BOOL(Int128);
+DEFINE_GETTER_SETTER_BOOL(UInt128);
 DEFINE_GETTER_SETTER_BOOL(take_union_field_addr);
 DEFINE_GETTER_SETTER_BOOL(vol_struct_union_fields);
 DEFINE_GETTER_SETTER_BOOL(const_struct_union_fields);
@@ -202,6 +206,8 @@ DEFINE_GETTER_SETTER_BOOL(fast_execution);
 //extensions
 DEFINE_GETTER_SETTER_BOOL(computed_goto);
 DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
+
+DEFINE_GETTER_SETTER_BOOL(type_of);
 
 void
 CGOptions::set_default_builtin_kinds()
@@ -259,6 +265,7 @@ CGOptions::set_default_settings(void)
 	compound_assignment(true);
 	math64(true);
 	inline_function(false);
+	stmt_expr(false);
 	math_notmp(false);
 	longlong(true);
 	int8(true);
@@ -305,11 +312,15 @@ CGOptions::set_default_settings(void)
 	post_incr_operator(true);
 	post_decr_operator(true);
 	unary_plus_operator(true);
+	local_labels(false);
 	use_embedded_assigns(true);
 	use_comma_exprs(true);
 	take_union_field_addr(true);
 	vol_struct_union_fields(true);
 	const_struct_union_fields(true);
+	Int128(false);
+	UInt128(false);
+
 	addr_taken_of_locals(true);
 	lang_cpp(false);
 	cpp11(false);
@@ -319,6 +330,7 @@ CGOptions::set_default_settings(void)
 	//extensions
 	computed_goto(false);
 	tm_relaxed(false);
+	type_of(false);
 }
 
 // Add options necessary for cpp 

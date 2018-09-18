@@ -125,6 +125,12 @@ public:
 	bool need_revisit;
 
 	std::vector<const Statement*> break_stms;
+        bool contains_label = false;
+        std::vector<string> labels_in_block;
+        void outputlocal_labels () const;
+
+        bool func_start_stmt_expr = false;
+
 private:
 
 	bool depth_protect;

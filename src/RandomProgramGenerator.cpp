@@ -170,16 +170,20 @@ static void print_help()
 	cout << "  --longlong| --no-longlong: enable | disable long long (enabled by default)." << endl << endl;
 	cout << "  --int8 | --no-int8: enable | disable int8_t (enabled by default)." << endl << endl;
 	cout << "  --uint8 | --no-uint8: enable | disable uint8_t (enabled by default)." << endl << endl;
+	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
+        cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
 	cout << "  --float | --no-float: enable | disable float (disabled by default)." << endl << endl;
 	cout << "  --main | --nomain: enable | disable to generate main function (enabled by default)." << endl <<  endl;
+	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
+	cout << "  --local-labels | --no-local-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
 
 	//extensions 
 	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
 	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
-
+	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -583,6 +587,18 @@ main(int argc, char **argv)
 		}
 //***********
 
+
+		if (strcmp (argv[i], "--typeof") == 0) {
+			CGOptions::type_of(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-typeof") == 0) {
+			CGOptions::type_of(false);
+			continue;
+		}
+//***********
+
 		if (strcmp (argv[i], "--structs") == 0) {
 			CGOptions::use_struct(true);
 			continue;
@@ -770,6 +786,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		if(strcmp (argv[i], "--stmt_expr") == 0){
+			CGOptions::stmt_expr(true);
+			continue;
+		}
+
+		if(strcmp (argv[i], "--no-stmt_expr") == 0){
+			CGOptions::stmt_expr(false);
+			continue;
+		}
+
 		if (strcmp (argv[i], "--longlong") == 0) {
 			CGOptions::longlong(true);
 			continue;
@@ -790,6 +816,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		if (strcmp (argv[i], "--local-labels") == 0) {
+			CGOptions::local_labels(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-local-labels") == 0) {
+			CGOptions::local_labels(false);
+			continue;
+		}
+
 		if (strcmp (argv[i], "--uint8") == 0) {
 			CGOptions::uint8(true);
 			continue;
@@ -799,6 +835,27 @@ main(int argc, char **argv)
 			CGOptions::uint8(false);
 			continue;
 		}
+
+		if (strcmp (argv[i], "--int128") == 0) {
+                        CGOptions::Int128(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-int128") == 0) {
+                        CGOptions::Int128(false);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--uint128") == 0) {
+                        CGOptions::UInt128(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-uint128") == 0) {
+                        CGOptions::UInt128(false);
+			continue;
+		}
+
 
 		if (strcmp (argv[i], "--float") == 0) {
 			CGOptions::enable_float(true);
@@ -874,6 +931,7 @@ main(int argc, char **argv)
 			CGOptions::computed_goto(false);
 			continue;
 		}
+
 
 		if (strcmp (argv[i], "--no-jumps") == 0) {
 			CGOptions::jumps(false);

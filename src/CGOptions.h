@@ -244,6 +244,9 @@ public:
 	static bool inline_function(void);
 	static bool inline_function(bool p);
 
+	static bool stmt_expr(void);
+	static bool stmt_expr(bool p);
+
 	static bool longlong(void);
 	static bool longlong(bool p);
 
@@ -252,6 +255,13 @@ public:
 
 	static bool uint8(void);
 	static bool uint8(bool p);
+
+	static bool Int128(void);
+        static bool Int128(bool p);
+
+        static bool UInt128(void);
+        static bool UInt128(bool p);
+
 
 	static bool enable_float(void);
 	static bool enable_float(bool p);
@@ -345,6 +355,10 @@ public:
 
 	static bool blind_check_global(void);
 	static bool blind_check_global(bool p);
+
+	static bool type_of(void);
+        static bool type_of(bool p);
+
 
 	static int stop_by_stmt(void);
 	static int stop_by_stmt(int p);
@@ -464,6 +478,9 @@ public:
 	static bool lang_cpp(void);
 	static bool lang_cpp(bool p);
 
+	static bool local_labels(void);
+	static bool local_labels(bool p);
+
 	static bool cpp11(void);
 	static bool cpp11(bool p);
 
@@ -550,10 +567,13 @@ private:
 	static bool	no_delta_reduction_;
 	static bool	math64_;
 	static bool	inline_function_;
+	static bool	stmt_expr_;
 	static bool	math_notmp_;
 	static bool	longlong_;
 	static bool	int8_;
 	static bool	uint8_;
+	static bool     Int128_;
+        static bool     UInt128_;
 	static bool	enable_float_;
 	static bool	strict_float_;
 	static bool	pointers_;
@@ -578,6 +598,7 @@ private:
 	static map<string, bool> enabled_builtin_kinds_;
 	static bool dangling_global_ptrs_;
 	static bool divs_;
+	static bool local_labels_;
 	static bool muls_;
 	static bool accept_argc_;
 	static bool random_random_;
@@ -593,6 +614,8 @@ private:
 	static bool match_exact_qualifiers_;
 
 	static int max_array_num_in_loop_;
+        static bool type_of_;
+
 	static bool identify_wrappers_;
 	static vector<int> safe_math_wrapper_ids_;
 	static bool mark_mutable_const_;

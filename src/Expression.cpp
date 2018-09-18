@@ -227,6 +227,12 @@ Expression::make_random(CGContext &cg_context, const Type* type, const CVQualifi
 		cg_context.expr_depth++;
 	}
 	ERROR_GUARD(NULL);
+	//we are disqualifying constant and Lhs on the right hand of operand,as they are very trival cases,ex int i=-19
+	if(CGOptions::stmt_expr()){
+		if(e->term_type !=eConstant || e->term_type != eLhs ){
+			e->expr_stmt_expr_true = true;
+		}
+	}
 	return e;
 }
 
@@ -302,6 +308,11 @@ Expression::make_random_param(CGContext &cg_context, const Type* type, const CVQ
 		cg_context.expr_depth++;
 	}
 	ERROR_GUARD(NULL);
+	if(CGOptions::stmt_expr()){
+		if(e->term_type !=eConstant || e->term_type != eLhs ){
+			e->expr_stmt_expr_true = true;
+		}
+	}
 	return e;
 }
 

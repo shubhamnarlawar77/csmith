@@ -168,7 +168,11 @@ CVQualifiers::match(const CVQualifiers& qfer) const
 	}
 	return (!accept_stricter && stricter_than(qfer)) || (accept_stricter && qfer.stricter_than(*this));
 }
-
+bool
+CVQualifiers::match_typeof (const CVQualifiers& qfer) const
+{
+	return is_consts == qfer.get_consts() && is_volatiles == qfer.get_volatiles();
+}
 bool
 CVQualifiers::match_indirect(const CVQualifiers& qfer) const
 {
@@ -575,6 +579,36 @@ CVQualifiers::sanity_check(const Type* t) const
 	assert(level >= 0);
 	return wildcard || (is_consts.size() == is_volatiles.size() && (static_cast<size_t>(level)+1) == is_consts.size());
 }
+//changehere
+//removed type as not needed 
+void
+CVQualifiers::output_qualified_type_of_typeof(const Type* t, std::ostream &out) const
+{
+	assert(t);
+	assert(sanity_check(t));
+	size_t i;
+	for (i=0; i<is_consts.size(); i++) {
+		if (i>0) {
+			out << "*";
+		}
+		if (is_consts[i]) {
+			if (!CGOptions::consts())
+				assert(0);
+			if (i > 0) out << " ";
+			out << "const ";
+		}
+		if (is_volatiles[i]) {
+			if (!CGOptions::volatiles())
+				assert(0);
+			if (i > 0) out << " ";
+			out << "volatile ";
+		}
+		if (i==0) {
+			out << "typeof(" << this->get_typeof_replace_var() << ")" ;
+			out << " ";
+		}
+	}
+}
 
 void
 CVQualifiers::output_qualified_type(const Type* t, std::ostream &out) const
@@ -718,4 +752,12 @@ CVQualifiers::output() const
 		cout << is_volatiles[i] << " ";
 	}
 	cout << endl;
+}
+void 
+CVQualifiers::set_typeof_replace_var(string global_var_name) const{
+        typeof_replace_var=global_var_name;
+}
+string
+CVQualifiers::get_typeof_replace_var() const{
+        return typeof_replace_var;
 }

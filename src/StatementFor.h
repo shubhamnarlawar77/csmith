@@ -77,6 +77,7 @@ public:
 
 	virtual void Output(std::ostream &out, FactMgr* fm, int indent = 0) const;
 
+	bool for_stmt_expr_true = false;
 private:
 	// XXX --- `init' and `incr' have the "wrong types."  Should be exprs.
 	const StatementAssign &init;

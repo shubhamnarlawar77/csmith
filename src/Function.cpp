@@ -66,7 +66,9 @@
 #include "DepthSpec.h"
 #include "ExtensionMgr.h"
 #include "OutputMgr.h"
-
+#include "CFGEdge.h"
+#include "StatementGoto.h"
+#include "ArrayVariable.h"
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -394,6 +396,8 @@ Function::Function(const string &name, const Type *return_type)
 	  visited_cnt(0),
 	  build_state(UNBUILT)
 {
+	is_para_typeof = false;
+	is_local_typeof = false;
 	FuncList.push_back(this);			// Add to global list of functions.
 }
 
@@ -408,12 +412,27 @@ Function::Function(const string &name, const Type *return_type, bool builtin)
 	  visited_cnt(0),
 	  build_state(UNBUILT)
 {
+	is_para_typeof = false;
+	is_local_typeof = false;
 	FuncList.push_back(this);			// Add to global list of functions.
 }
-
+/*
+* nearly equivalent for make_first,but called internally for except first function
+*/
 Function *
 Function::make_random_signature(const CGContext& cg_context, const Type* type, const CVQualifiers* qfer)
 {
+	int prob = 0;
+	if(CGOptions::type_of())
+		prob = rnd_flipcoin(70);
+	else
+		prob = 0;
+
+	vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+	//if global variables are present and randomly selected as true then do rest of jobs
+	int should_typeof_be_present = ( prob && globals.size()!=0 ) ;//keep value more for maximum generation
+
+
 	if (type == 0)
 		type = RandomReturnType();
 
@@ -426,16 +445,28 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
 	CVQualifiers ret_qfer = qfer==0 ? CVQualifiers::random_qualifiers(type, Effect::READ, cg_context, true)
 		                            : qfer->random_qualifiers(true, Effect::READ, cg_context);
 	ERROR_GUARD(NULL);
+	//so the type of statement should be simple and randomly select the function for typeof is true and of cource cgoptions is set
+	// then set it for typeof= true and pass the replacing paramenters
+
 	f->rv = Variable::CreateVariable(rvname, type, NULL, &ret_qfer);
+
+	//changehere randomly set if typeof should be present or not for the function
+	if(type->eType == eSimple && should_typeof_be_present){
+		f->rv->is_typeof = true;		//make the variable as true
+	}
 	GenerateParameterList(*f);
 	FMList.push_back(new FactMgr(f));
 	if (CGOptions::inline_function() && rnd_flipcoin(InlineFunctionProb))
 		f->is_inlined = true;
+	if(rnd_flipcoin(66))
+		f->func_stmt_expr_true = true;
+	else
+		f->func_stmt_expr_true = false;
 	return f;
 }
 
 /*
- *
+ *actually this is invoked except first function
  */
 Function *
 Function::make_random(const CGContext& cg_context, const Type* type, const CVQualifiers* qfer)
@@ -448,7 +479,7 @@ Function::make_random(const CGContext& cg_context, const Type* type, const CVQua
 }
 
 /*
- *
+ *we are not generating typeof for first function
  */
 Function *
 Function::make_first(void)
@@ -481,6 +512,14 @@ Function::make_first(void)
 
 	// collect info about global dangling pointers
 	fm->find_dangling_global_ptrs(f);
+
+//does this function contain statement expressions
+	if(rnd_flipcoin(66))
+		f->func_stmt_expr_true = true;
+	else
+		f->func_stmt_expr_true = false;
+//finding the labels inside blocks in function and storing them in labels_in_block
+	store_labels_in_block(f);
 	return f;
 }
 
@@ -537,7 +576,11 @@ Function::OutputHeader(std::ostream &out)
 	if (CGOptions::force_globals_static()) {
 		out << "static ";
 	}
-	rv->qfer.output_qualified_type(return_type, out);
+	if(rv->is_typeof)
+               rv->qfer.output_qualified_type_of_typeof(return_type, out);
+        else
+               rv->qfer.output_qualified_type(return_type, out);
+
 	out << " " << get_prefixed_name(name) << "(";
 	OutputFormalParamList( out );
 	out << ")";
@@ -765,7 +808,7 @@ Function::make_builtin_function(const string &function_string)
 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
 
 	// create a fact manager for this function, with empty global facts
-	FactMgr* fm = new FactMgr(f);
+	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
 	FMList.push_back(fm);
 
 	GenerateParameterListFromString(*f, StringUtils::get_substring(v[2], '(', ')'));
@@ -795,7 +838,7 @@ Function::compute_summary(void)
 	// determine whether an union field is read
 	union_field_read = body->read_union_field();
 }
-
+//CHANGEHERE
 /*
  *
  */
@@ -814,6 +857,16 @@ GenerateFunctions(void)
 	/*only for block 0,as __tm_* will be for first block else could cause some goto into the __tm_* ,which causes UB.
 	*/
 
+	// -----------------
+	// Create body of each function, continue until no new functions are created.
+	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {
+		// Dynamically adds new functions to the end of the list..
+		if (FuncList[cur_func_idx]->is_built() == false) {
+			FuncList[cur_func_idx]->GenerateBody(CGContext::get_empty_context());
+			ERROR_RETURN();
+		}
+	}
+
 	if(CGOptions::tm_relaxed()){
 		//need to select at least one so for CLI options add '1'
 		unsigned int count_tm_relaxed = rnd_upto(FuncListSize()) + 1 ;//if size=10 then 1,2,....10 as 1 is added 
@@ -825,14 +878,19 @@ GenerateFunctions(void)
 			}
 		}
 	}
-	// -----------------
-	// Create body of each function, continue until no new functions are created.
-	for (cur_func_idx = 0; cur_func_idx < FuncListSize(); cur_func_idx++) {
-		// Dynamically adds new functions to the end of the list..
-		if (FuncList[cur_func_idx]->is_built() == false) {
-			FuncList[cur_func_idx]->GenerateBody(CGContext::get_empty_context());
-			ERROR_RETURN();
+	if (CGOptions::stmt_expr()){
+		for (int i =0 ;i < FuncList.size() ; i++){
+			if(FuncList[i]->func_stmt_expr_true){
+				Block *zero_blk = FuncList[i]->blocks[0];
+				zero_blk -> func_start_stmt_expr = true;
+			}
 		}
+	}
+
+	if(CGOptions::type_of()){
+		typeof_on_return_values ();//compulsorily generate for return types, so atleast something comes in program
+		typeof_on_func_parameters ();//but can/cannot for parameter types
+		typeof_on_local_variables();
 	}
 	FactPointTo::aggregate_all_pointto_sets();
 	ExtensionMgr::GenerateValues();
@@ -932,6 +990,232 @@ Function::~Function()
 	}
 }
 
+void
+store_labels_in_block(const Function *f){
+       FactMgr* fm= get_fact_mgr_for_func(f);
+       vector<const CFGEdge*> local_cfg_edges_goto;
+       local_cfg_edges_goto.clear();
+       for (int i =0 ;i < fm->cfg_edges.size(); i++){
+               if(fm->cfg_edges[i]->src->eType == eGoto){
+                       local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
+               }
+       }
+       for (int i=0;i<local_cfg_edges_goto.size();i++){
+               StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
+               Block *blk = local_cfg_edges_goto[i]->dest->parent;
+               Block *goto_block = sg->parent;
+               if(CGOptions::local_labels()){
+                       while(goto_block != f->blocks[0]){
+                               if(goto_block == blk){
+                                       blk->contains_label = true;
+                                       break;
+                               }
+                               goto_block = goto_block -> parent;
+                       }
+                       if(goto_block == f->blocks[0] && goto_block == blk){
+                               blk->contains_label = true;
+                       }
+/*
+                       if(blk!= sg->parent)
+                               blk->contains_label = true;
+*/
+               }
+               else
+
+                       blk->contains_label = true;
+               std::vector<string>::iterator itr;
+               itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
+               if(!(itr != blk->labels_in_block.end())){
+                       blk->labels_in_block.push_back(sg->label);
+               }
+       }
+       for (int i=0; i< f->blocks.size() ; i++){
+               Block* b = f->blocks[i];
+               if(b!=f->blocks[0] && b->contains_label){
+                       while(b!=f->blocks[0]){
+                               b->contains_label = true;
+                               b=b->parent;
+                      }
+               }
+       }
+}
+
+//changehere
+
+Variable *
+Function::find_global_to_insert_in_typeof(const Variable *para){       //now set values in qfer and not variable
+       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+       int global_count = globals.size();
+       while(global_count > 0){
+               int index_of_global_var = rnd_upto(globals.size());
+               if(globals[index_of_global_var]->type == para->type && globals[index_of_global_var]->qfer.match_typeof(para->qfer) && globals[index_of_global_var]->type->eType == eSimple){
+                       /*remianing to send type(only for pointer,search for what more?) will do once everything is working*/
+                       //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
+                       return globals[index_of_global_var];
+               }
+       global_count--;
+       }
+       return NULL;       //element not found for the number of times we looped| element is not present
+}
+
+//changehere
+void typeof_on_return_values(){
+
+       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+       for (int i =0; i< FuncList.size(); i++){
+               int global_count = globals.size();
+               int flag=0;
+               if(FuncList[i]->rv->is_typeof){
+                       const Type *return_type = FuncList[i]->rv->type;
+                       while(global_count > 0){
+                               int index_of_global_var = rnd_upto(globals.size());
+                               if(globals[index_of_global_var]->type == return_type && globals[index_of_global_var]->type->eType == eSimple ){
+                                       if(!globals[index_of_global_var]->is_array_field())
+                                               FuncList[i]->rv->qfer.set_typeof_replace_var(globals[index_of_global_var]->get_actual_name());
+                                       else{
+                                               ostringstream ss;
+                                               ss.clear();
+                                               std::vector<unsigned int> sizes;
+                                               sizes.clear();//clear the sizes vector, so no previous values persist
+                                               ss << globals[index_of_global_var]->get_actual_name();
+
+                                               ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
+                                               sizes = av->get_sizes();
+                                               for (int i=0; i< sizes.size() ; i++){
+                                                       ss << "[" << sizes[i] << "]";
+                                               }
+                                               FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
+                                       }
+                                       /*remianing to send type(only for pointer,search for what more?) will do once everything is */
+                                       //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
+                                       flag=1;//indicates typeof is surely going to be present
+                                       break;
+                               }
+                       global_count--;
+                       }
+                       if(flag!=1){
+                               FuncList[i]->rv->is_typeof=false;//we are now removing the tag of typeof from function,as nothing found
+                       }
+               }
+       }
+
+}
+void typeof_on_func_parameters(){
+       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+
+       if(globals.size() > 0 && FuncList.size() > 1){
+               int cnt_func_para_typeof = rnd_upto(FuncList.size());
+               for (int i = 0; i< cnt_func_para_typeof ; i++){
+                       int idx_func = rnd_upto(FuncList.size());
+                       if(FuncList[idx_func]->param.size() != 0 ){
+                               FuncList[idx_func]->is_para_typeof = true;//IMP
+
+                               int cnt_para_with_typeof = rnd_upto(FuncList[idx_func]->param.size());
+                               if(cnt_para_with_typeof == 0)
+                                       cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
+
+                               int flag =0 ;
+                               while(cnt_para_with_typeof > 0){
+                                       int indx_para = rnd_upto(FuncList[idx_func]->param.size());
+                                       Variable *para = FuncList[idx_func]->param[indx_para];
+                                       //cout << "\n para " << para->name;
+                                       Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(para);
+                                       if(glob_replace_var !=  NULL){
+                                               flag =1;
+                                               para->is_typeof_used_param  = true;
+                                
+                                               if(!glob_replace_var->is_array_field()){
+                                                       para->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
+                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
+                                               }
+                                               else{
+                                                       ostringstream ss;
+                                                       ss.clear();
+                                                       std::vector<unsigned int> sizes;
+                                                       sizes.clear();//clear the sizes vector, so no previous values persist
+                                                       ss << glob_replace_var->get_actual_name();
+
+                                                       ArrayVariable *av = (ArrayVariable*)glob_replace_var;
+                                                       sizes = av->get_sizes();
+                                                       for (int i=0; i< sizes.size() ; i++){
+                                                               ss << "[" << sizes[i] << "]";
+                                                       }
+                                                       //cout << "replace var" << ss.str();
+                                                       para->qfer.set_typeof_replace_var(ss.str());
+                                               }
+                                       }
+                               cnt_para_with_typeof--;
+                               }
+                               if( flag==0 ){
+                                       FuncList[idx_func]->is_para_typeof = false;
+                               }
+                       }
+               }
+       }
+}
+void typeof_on_local_variables(){
+       vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+
+       if(globals.size() > 0 && FuncList.size() > 1){
+               int cnt_func_local_typeof = rnd_upto(FuncList.size());
+//             cout << "\nnarla " << cnt_func_local_typeof;
+               for (int i = 0; i< cnt_func_local_typeof ; i++){
+                       int idx_func = rnd_upto(FuncList.size());
+//cout << "\nboo" << FuncList[idx_func]->name;
+                       if(FuncList[idx_func]->blocks.size() != 0 ){//obviously this won't happen as always atleast 1 block
+                               FuncList[idx_func]->is_local_typeof = true;//IMP
+                               int cnt_blocks_with_typeof = rnd_upto(FuncList[idx_func]->blocks.size());
+//cout << "from total " << FuncList[idx_func]->blocks.size() << "selected are " << cnt_blocks_with_typeof;
+//                             if(cnt_para_with_typeof == 0)
+//                                     cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
+
+                               int flag =0 ;
+                               while(cnt_blocks_with_typeof > 0){
+                                       int indx_block = rnd_upto(FuncList[idx_func]->blocks.size());//========ok
+                               if(FuncList[idx_func]->blocks[indx_block]->local_vars.size() > 0){
+
+                                       int temp_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
+
+                                       for(int i=0; i<temp_local_var; i++){
+                                       int random_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
+                                       Variable *local = FuncList[idx_func]->blocks[indx_block]->local_vars[random_local_var];//
+                                       //cout << "\n para " << para->name;
+                                       Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(local);
+                                       if(glob_replace_var !=  NULL){
+                                               flag =1;
+                                               local->is_typeof_used_local  = true;
+
+                                               if(!glob_replace_var->is_array_field()){
+                                                       local->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
+                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
+                                               }
+                                               else{
+                                                       ostringstream ss;
+                                                       ss.clear();
+                                                       std::vector<unsigned int> sizes;
+                                                       sizes.clear();//clear the sizes vector, so no previous values persist
+                                                       ss << glob_replace_var->get_actual_name();
+
+                                                       ArrayVariable *av = (ArrayVariable*)glob_replace_var;
+                                                       sizes = av->get_sizes();
+                                                       for (int i=0; i< sizes.size() ; i++){
+                                                               ss << "[" << sizes[i] << "]";
+                                                       }
+                                                       //cout << "replace var" << ss.str();
+                                                       local->qfer.set_typeof_replace_var(ss.str());
+                                               }
+                                       }
+                                       }
+                               }
+                               cnt_blocks_with_typeof--;
+                               }
+                               if( flag==0 ){
+                                       FuncList[idx_func]->is_local_typeof = false;
+                               }
+                       }
+               }
+       }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

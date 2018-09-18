@@ -248,6 +248,7 @@ FunctionInvocationUser::build_invocation_and_function(CGContext &cg_context, con
 	}
 
 	func->visited_cnt = 1;
+	store_labels_in_block(func);
 	return fiu;
 }
 

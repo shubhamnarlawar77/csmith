@@ -62,6 +62,7 @@ public:
 	bool stricter_than(const CVQualifiers& qfer) const;
 
 	bool match(const CVQualifiers& qfer) const;
+	bool match_typeof (const CVQualifiers& qfer) const;
 	bool match_indirect(const CVQualifiers& qfer) const;
 
 	const vector<bool>& get_consts(void) const { return is_consts;}
@@ -87,11 +88,18 @@ public:
 
 	bool sanity_check(const Type* t) const;
 	void output_qualified_type(const Type* t, std::ostream &out) const;
+	//changehere
+	void output_qualified_type_of_typeof(const Type* t, std::ostream &out) const;
 	void output() const;
 	void OutputFirstQuals(std::ostream &out) const;
 
 	bool wildcard;
 	bool accept_stricter;
+
+//changehere
+	void set_typeof_replace_var(string global_var_name) const;
+	string get_typeof_replace_var() const;
+	mutable string typeof_replace_var="";
 private:
 	// Type qualifiers.
 	vector<bool> is_consts;
