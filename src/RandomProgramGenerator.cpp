@@ -173,7 +173,7 @@ static void print_help()
 	cout << "  --float | --no-float: enable | disable float (disabled by default)." << endl << endl;
 	cout << "  --main | --nomain: enable | disable to generate main function (enabled by default)." << endl <<  endl;
 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
-	cout << "  --local-labels | --no-local-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
 
@@ -816,12 +816,12 @@ main(int argc, char **argv)
 			continue;
 		}
 
-		if (strcmp (argv[i], "--local-labels") == 0) {
+		if (strcmp (argv[i], "--loc-labels") == 0) {
 			CGOptions::local_labels(true);
 			continue;
 		}
 
-		if (strcmp (argv[i], "--no-local-labels") == 0) {
+		if (strcmp (argv[i], "--no-loc-labels") == 0) {
 			CGOptions::local_labels(false);
 			continue;
 		}

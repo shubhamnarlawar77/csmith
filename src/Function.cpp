@@ -995,40 +995,41 @@ store_labels_in_block(const Function *f){
        FactMgr* fm= get_fact_mgr_for_func(f);
        vector<const CFGEdge*> local_cfg_edges_goto;
        local_cfg_edges_goto.clear();
+	std::vector <string> goto_src_vector;
+	goto_src_vector.clear();
        for (int i =0 ;i < fm->cfg_edges.size(); i++){
                if(fm->cfg_edges[i]->src->eType == eGoto){
-                       local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
+                        local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
+			goto_src_vector.push_back (((StatementGoto*)(fm->cfg_edges[i]->src))->label);
                }
        }
        for (int i=0;i<local_cfg_edges_goto.size();i++){
                StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
                Block *blk = local_cfg_edges_goto[i]->dest->parent;
                Block *goto_block = sg->parent;
-               if(CGOptions::local_labels()){
-                       while(goto_block != f->blocks[0]){
-                               if(goto_block == blk){
-                                       blk->contains_label = true;
-                                       break;
-                               }
-                               goto_block = goto_block -> parent;
-                       }
-                       if(goto_block == f->blocks[0] && goto_block == blk){
-                               blk->contains_label = true;
-                       }
-/*
-                       if(blk!= sg->parent)
-                               blk->contains_label = true;
-*/
-               }
-               else
-
-                       blk->contains_label = true;
+		if(CGOptions::local_labels()){
+			int count_goto_for_label = std::count(goto_src_vector.begin(),goto_src_vector.end(),sg->label);
+			if ((count_goto_for_label <= 1)){
+                	       while(goto_block != f->blocks[0]){
+        	                       if(goto_block == blk){
+	                                       blk->contains_label = true;
+                                	       break;
+                        	       }
+                	               goto_block = goto_block -> parent;
+        	               }
+	                       if(goto_block == f->blocks[0] && goto_block == blk){
+                        	       blk->contains_label = true;
+                	       }
+        	       }
+		}
+	        else
+        	        blk->contains_label = true;
                std::vector<string>::iterator itr;
-               itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
-               if(!(itr != blk->labels_in_block.end())){
-                       blk->labels_in_block.push_back(sg->label);
+       	       itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
+               if(!(itr != blk->labels_in_block.end()) && blk->contains_label == 1){
+       	               blk->labels_in_block.push_back(sg->label);
                }
-       }
+       	}
        for (int i=0; i< f->blocks.size() ; i++){
                Block* b = f->blocks[i];
                if(b!=f->blocks[0] && b->contains_label){
