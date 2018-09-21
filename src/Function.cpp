@@ -708,7 +708,6 @@ Function::GenerateBody(const CGContext &prev_context)
 
 	// Mark this function as built.
 	build_state = BUILT;
-
 }
 
 void
@@ -1003,7 +1002,9 @@ store_labels_in_block(const Function *f){
 			goto_src_vector.push_back (((StatementGoto*)(fm->cfg_edges[i]->src))->label);
                }
        }
+	bool dummy= false;
        for (int i=0;i<local_cfg_edges_goto.size();i++){
+		dummy = false;
                StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
                Block *blk = local_cfg_edges_goto[i]->dest->parent;
                Block *goto_block = sg->parent;
@@ -1013,20 +1014,24 @@ store_labels_in_block(const Function *f){
                 	       while(goto_block != f->blocks[0]){
         	                       if(goto_block == blk){
 	                                       blk->contains_label = true;
+						dummy = true;
                                 	       break;
                         	       }
                 	               goto_block = goto_block -> parent;
         	               }
 	                       if(goto_block == f->blocks[0] && goto_block == blk){
                         	       blk->contains_label = true;
+					dummy = true;
                 	       }
         	       }
 		}
-	        else
+	        else{
         	        blk->contains_label = true;
+			dummy = true;
+		}
                std::vector<string>::iterator itr;
        	       itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
-               if(!(itr != blk->labels_in_block.end()) && blk->contains_label == 1){
+               if( (itr == blk->labels_in_block.end()) && (blk->contains_label == 1) && dummy == true){
        	               blk->labels_in_block.push_back(sg->label);
                }
        	}
