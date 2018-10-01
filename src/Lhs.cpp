@@ -106,7 +106,7 @@ Lhs::make_random(CGContext &cg_context, const Type* t, const CVQualifiers* qfer,
 		if (valid && CGOptions::ccomp() && var->isBitfield_ && t->is_long_long()) {
 			valid = false;
 		}
-		if (!t->is_float() && var->type->is_float()) {
+		if (( !t->is_float() && var->type->is_float() ) || ( (!t->is_double() && var->type->is_double()) )  ) {
 			valid = false;
 		}
 		if (valid) {

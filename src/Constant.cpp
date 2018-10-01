@@ -388,7 +388,7 @@ GenerateRandomConstant(const Type* type)
 			case eFloat:     v = GenerateRandomFloatHexConstant();		break;
 			case eInt128:    v = GenerateRandomInt128Constant();		break;
 			case eUInt128:   v = GenerateRandomInt128Constant();		break;
-			// case eDouble:    v = GenerateRandomFloatConstant();		break;
+		        case eDouble:    v = GenerateRandomFloatHexConstant();		break;
 			default:
 				assert(0 && "Unsupported type!");
 		    }

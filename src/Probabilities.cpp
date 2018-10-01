@@ -698,6 +698,12 @@ Probabilities::set_default_simple_types_prob()
                 SET_SINGLE_NAME("UInt128_prob", UInt128, 0);
         }
 
+	if (CGOptions::double_enable()) {
+                SET_SINGLE_NAME("Double_prob", Double, 1);
+        }
+        else {
+                SET_SINGLE_NAME("Double_prob", Double, 0);
+        }
 
 	if (CGOptions::int8()) {
 		SET_SINGLE_NAME("char_prob", Char, 1);

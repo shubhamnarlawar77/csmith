@@ -95,7 +95,7 @@ StatementAssign::AssignOpsProbability(const Type* type)
 	// Second, similar to signed integers, we don't generate pre- or post-
 	// operators for floating point values. Instead, we will wrap all
 	// of these operations into safe_float_math later.
-	if (type && (type->eType != eSimple || type->get_base_type()->is_float())) {
+	if (type && (type->eType != eSimple || type->get_base_type()->is_float() ||  type->get_base_type()->is_double())) {
 		return eSimpleAssign;
 	}
 
@@ -205,8 +205,9 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 		e->cast_type = type;
 	}
 	// e can be of float type. So, we reset its
-	if ((lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float())
-	    && !StatementAssign::AssignOpWorksForFloat(op)) {
+	if ( ( (lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float())
+	    && !StatementAssign::AssignOpWorksForFloat(op) ) || ( (lhs->get_var()->type->get_base_type()->is_double() || e->get_type().get_base_type()->is_double())
+	    && !StatementAssign::AssignOpWorksForFloat(op)) ) {
 		op = eSimpleAssign;
 	}
 

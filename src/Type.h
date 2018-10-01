@@ -81,7 +81,7 @@ enum eSimpleType
 	eUShort,
 	eULong,
 	eFloat,
-	// eDouble,
+	eDouble,
 	eULongLong,
 	eUInt128,
 	eInt128,
@@ -243,6 +243,9 @@ public:
 	}
 	bool is_float() const {
 		return ((eType == eSimple) && (simple_type == eFloat));
+	}
+	bool is_double() const {
+		return ((eType == eSimple) && (simple_type == eDouble));
 	}
 	bool is_promotable(const Type* t) const;
 	bool is_convertable(const Type* t) const;

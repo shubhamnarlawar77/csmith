@@ -197,6 +197,7 @@ DEFINE_GETTER_SETTER_BOOL(use_embedded_assigns);
 DEFINE_GETTER_SETTER_BOOL(use_comma_exprs);
 DEFINE_GETTER_SETTER_BOOL(Int128);
 DEFINE_GETTER_SETTER_BOOL(UInt128);
+DEFINE_GETTER_SETTER_BOOL(double_enable);
 DEFINE_GETTER_SETTER_BOOL(take_union_field_addr);
 DEFINE_GETTER_SETTER_BOOL(vol_struct_union_fields);
 DEFINE_GETTER_SETTER_BOOL(const_struct_union_fields);
