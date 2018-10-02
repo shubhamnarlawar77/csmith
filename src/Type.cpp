@@ -1748,6 +1748,9 @@ Type::Output(std::ostream &out) const
 		} else if (this->simple_type == eFloat) {
 		        out << "float";
 		}
+		else if(this->simple_type == eDouble && CGOptions::double_enable()){
+			out << "double ";
+		}
 		else {
 			if(this->simple_type == eInt128){
 				out << "__int";
@@ -1756,9 +1759,6 @@ Type::Output(std::ostream &out) const
 			else if(this->simple_type == eUInt128){
 				out << "unsigned __int";
 				out << (SizeInBytes() * 8);
-			}
-			else if(this->simple_type == eDouble){
-				out << "double ";
 			}
 			else{
 			out << (is_signed() ? "int" : "uint");
