@@ -1143,15 +1143,15 @@ VariableSelector::SelectLoopCtrlVar(const CGContext &cg_context, const vector<co
 	// points-to analysis simply assumes loop stepping has no pointer effect
 	size_t len = vars.size();
 	for (size_t i=0; i<len; i++) {
-		if (vars[i]->type &&
-			(!vars[i]->type->has_int_field() ||		// remove variables isn't (or doesn't contain) integers
-			(vars[i]->type->eType == eUnion &&
-			vars[i]->type->contain_pointer_field()))) {
-			vars.erase(vars.begin() + i);
-			i--;
-			len--;
-		}
-	}
+                if (vars[i]->type &&
+                        (!vars[i]->type->has_int_field() ||             // remove variables isn't (or doesn't contain) integers
+                        (vars[i]->type->eType == eUnion &&
+                        vars[i]->type->contain_pointer_field()))) {
+                        vars.erase(vars.begin() + i);
+                        i--;
+                        len--;
+                }
+        }
 	Variable* var = choose_var(vars, Effect::WRITE, cg_context, type, 0, eConvert, invalid_vars, true);
 	ERROR_GUARD(NULL);
 	if (var == NULL) {
@@ -1419,6 +1419,8 @@ VariableSelector::itemize_array(CGContext& cg_context, const ArrayVariable* av)
 				if (CGOptions::ccomp() && iv->is_packed_aggregate_field_var())
 					continue;
 				if (iv->type->is_float())
+					continue;
+				if (iv->type->is_double())
 					continue;
 				// unfortunately different std::map implementations give us diff. order, we
 				// have to sort them to generate consistant outputs across diff. platforms

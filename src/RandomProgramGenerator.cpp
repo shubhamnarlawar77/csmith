@@ -184,6 +184,7 @@ static void print_help()
 	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -845,6 +846,17 @@ main(int argc, char **argv)
                         CGOptions::Int128(false);
                         continue;
                 }
+
+		if (strcmp (argv[i], "--double") == 0) {
+                        CGOptions::double_enable(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-double") == 0) {
+                        CGOptions::double_enable(false);
+                        continue;
+                }
+
 
                 if (strcmp (argv[i], "--uint128") == 0) {
                         CGOptions::UInt128(true);

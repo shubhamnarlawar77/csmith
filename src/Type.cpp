@@ -436,6 +436,10 @@ Type::get_type_from_string(const string &type_string)
 	else if (type_string == "UInt128") {
 		return &Type::get_simple_type(eUInt128);
 	}
+	else if (type_string == "Double") {
+                return &Type::get_simple_type(eDouble);
+        }
+
 
 	assert(0 && "Unsupported type string!");
 	return NULL;
@@ -1432,6 +1436,7 @@ Type::to_unsigned(void) const
 			case eLongLong: return &get_simple_type(eULongLong);
 			case eInt128: return &get_simple_type(eInt128);
 			case eUInt128: return &get_simple_type(eUInt128);
+			case eDouble: return &get_simple_type(eDouble);
 			default:
 				break;
 		}
@@ -1465,6 +1470,7 @@ Type::is_promotable(const Type* t) const
 			case eULong: return (t2 == eLong || t2 == eULong || t2 == eLongLong || t2 == eULongLong);
 			case eLongLong:
 			case eULongLong: return (t2 == eLongLong || t2 == eULongLong);
+			case eDouble:
 			case eFloat: return (t2 != eVoid);
 			default: break;
 		}
@@ -1501,6 +1507,10 @@ Type::is_convertable(const Type* t) const
 			((ptr_type->simple_type == eFloat && t->ptr_type->simple_type != eFloat) ||
                 	 (ptr_type->simple_type != eFloat && t->ptr_type->simple_type == eFloat)))
 		    return false;
+		else if ((ptr_type->simple_type == eDouble && t->ptr_type->simple_type != eDouble) ||
+                        (ptr_type->simple_type != eDouble && t->ptr_type->simple_type == eDouble))
+                   return false;
+
 		else if (CGOptions::lang_cpp())
 			return false;	// or we need an explicit cast here
 		else
@@ -1601,7 +1611,7 @@ Type::SizeInBytes(void) const
 		case eFloat:		return 4;
 		case eInt128: 		return 16;
 		case eUInt128: 		return 16;
-//		case eDouble:	return 8;
+		case eDouble:	return 8;
 		}
 		break;
 	case eUnion: {
@@ -1672,6 +1682,13 @@ Type::SelectLType(bool no_volatile, eAssignOps op)
 			type = &Type::get_simple_type(eFloat);
 		}
 	}
+       // choose double as LHS type
+       if (!type) {
+               if (StatementAssign::AssignOpWorksForFloat(op) ) {
+                       type = &Type::get_simple_type(eDouble);
+               }
+       }
+
 
 	// default is any integer type
 	if (!type) {
@@ -1730,6 +1747,9 @@ Type::Output(std::ostream &out) const
 			out << "void";
 		} else if (this->simple_type == eFloat) {
 		        out << "float";
+		}
+		else if(this->simple_type == eDouble && CGOptions::double_enable()){
+			out << "double ";
 		}
 		else {
 			if(this->simple_type == eInt128){

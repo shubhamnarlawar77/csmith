@@ -120,6 +120,10 @@ StatementArrayOp::make_random_array_init(CGContext &cg_context)
 				invalid_vars.push_back(cv);
 				continue;
 			}
+			if(cv->type->is_double()) {
+				invalid_vars.push_back(cv);
+				continue;
+			}
 			if (cv->is_volatile())
 				vol_count++;
 			if ((CGOptions::strict_volatile_rule() && (vol_count > 1) && cv->is_volatile())

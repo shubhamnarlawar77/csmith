@@ -141,6 +141,7 @@ enum ProbName {
 	pFloatProb,
 	pUInt128Prob,
 	pInt128Prob,
+	pDoubleProb,
 
 	// for safe math ops
 	pSafeOpsSizeProb,
