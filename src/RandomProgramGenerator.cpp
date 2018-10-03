@@ -185,6 +185,8 @@ static void print_help()
 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
+	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
+
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -868,6 +870,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		
+		if (strcmp (argv[i], "--complex") == 0) {
+                        CGOptions::complex(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-complex") == 0) {
+                        CGOptions::complex(false);
+                        continue;
+                }
 
 		if (strcmp (argv[i], "--float") == 0) {
 			CGOptions::enable_float(true);

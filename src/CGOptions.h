@@ -269,6 +269,9 @@ public:
 	static bool enable_float(void);
 	static bool enable_float(bool p);
 
+	static bool complex(void);
+        static bool complex(bool p);
+
 	static bool strict_float(void);
 	static bool strict_float(bool p);
 
@@ -579,6 +582,7 @@ private:
         static bool     UInt128_;
 	static bool	double_enable_;
 	static bool	enable_float_;
+	static bool	complex_;
 	static bool	strict_float_;
 	static bool	pointers_;
 	static bool	arrays_;

@@ -1,6 +1,6 @@
 // -*- mode: C++ -*-
 //
-// Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 The University of Utah
+// Copyright (c) 2007, 2008, 2009, 2010, 2011, 2013, 2014, 2015, 2017 The University of Utah
 // All rights reserved.
 //
 // This file is part of `csmith', a random generator of C programs.
@@ -496,7 +496,6 @@ VariableSelector::choose_var(vector<Variable *> vars,
 	}
 	return choose_ok_var(ok_vars);
 }
-
 Variable *
 VariableSelector::create_and_initialize(Effect::Access access, const CGContext &cg_context, const Type* t,
 					const CVQualifiers* qfer, Block *blk, std::string name)
@@ -520,6 +519,19 @@ VariableSelector::create_and_initialize(Effect::Access access, const CGContext &
 	return var;
 }
 
+Variable *
+VariableSelector::create_and_initialize_complex (Effect::Access access, const CGContext &cg_context, const Type* t,
+					const CVQualifiers* qfer, Block *blk, std::string name)
+{
+	const Expression* init = NULL;
+        Variable* var = NULL;
+//	init = make_complex_init_value(access, cg_context, t, qfer, blk);
+	init = make_init_value(access, cg_context, t, qfer, blk);
+	var = new_variable(name, t, init, qfer);
+	assert(var);
+	var->qfer.set_complex( true );
+	return var;
+}
 static int tmp_count = 0;
 // --------------------------------------------------------------
  /* Parameter "type"
@@ -537,8 +549,13 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 	ERROR_GUARD(NULL);
 	string name = RandomGlobalName();
 	tmp_count++;
-	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
-
+	Variable *var=NULL;
+	if(CGOptions::complex() && ( t->eType == eSimple && t->simple_type == eFloat))
+		var = create_and_initialize_complex(access, cg_context, t, &var_qfer, 0, name);
+	else if(CGOptions::complex() && ( t->eType == eSimple && t->simple_type == eDouble))
+		var = create_and_initialize_complex(access, cg_context, t, &var_qfer, 0, name);
+	else
+		var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
 	GlobalList.push_back(var);
 	// for DFA
 	FactMgr* fm = get_fact_mgr(&cg_context);
@@ -552,6 +569,16 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 		GlobalNonvolatilesList.push_back(var);
 	}
 	var_created = true;
+	if(var->get_actual_name() == "g_101"){
+		cout << " \nCVQUALIFIERS ";
+		if (var_qfer.is_volatile())
+			cout << " volatile ";
+		else if (var_qfer.is_const())
+			cout << " const ";
+		else if (var_qfer.is_qualifier_complex() == true)
+			cout << "complex ";
+		cout <<"\t type "<< t->simple_type;
+	}
 	return var;
 
 }

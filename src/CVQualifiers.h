@@ -100,7 +100,10 @@ public:
 	void set_typeof_replace_var(string global_var_name) const;
 	string get_typeof_replace_var() const;
 	mutable string typeof_replace_var="";
+	void set_complex(bool complex_value) const;
+	bool is_qualifier_complex() const;
 private:
+	mutable bool is_complex = false;
 	// Type qualifiers.
 	vector<bool> is_consts;
 	vector<bool> is_volatiles;

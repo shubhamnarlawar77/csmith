@@ -293,7 +293,9 @@ OutputMgr::OutputHeader(int argc, char *argv[], unsigned long seed)
 		out << "#include <float.h>\n";
 		out << "#include <math.h>\n";
 	}
-
+	if(CGOptions::complex()) {
+		out << "#include <complex.h>\n";
+	}
 	ExtensionMgr::OutputHeader(out);
 
 	out << runtime_include << endl;
