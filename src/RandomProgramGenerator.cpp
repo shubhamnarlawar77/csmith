@@ -187,6 +187,7 @@ static void print_help()
 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
 	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
 
 	// numbered controls
@@ -848,6 +849,16 @@ main(int argc, char **argv)
 
                 if (strcmp (argv[i], "--no-int128") == 0) {
                         CGOptions::Int128(false);
+                        continue;
+                }
+
+		if (strcmp (argv[i], "--binary") == 0) {
+                        CGOptions::binary(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-binary") == 0) {
+                        CGOptions::binary(false);
                         continue;
                 }
 

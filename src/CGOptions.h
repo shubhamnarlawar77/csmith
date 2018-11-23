@@ -265,6 +265,9 @@ public:
         static bool UInt128(void);
         static bool UInt128(bool p);
 
+	static bool binary(void);
+        static bool binary(bool p);
+
 
 	static bool enable_float(void);
 	static bool enable_float(bool p);
@@ -580,6 +583,7 @@ private:
 	static bool	uint8_;
 	static bool     Int128_;
         static bool     UInt128_;
+	static bool	binary_;
 	static bool	double_enable_;
 	static bool	enable_float_;
 	static bool	complex_;
