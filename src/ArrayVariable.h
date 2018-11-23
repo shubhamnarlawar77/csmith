@@ -83,6 +83,8 @@ public:
 	const vector<const Expression*>& get_init_values(void) const { return init_values;}
 	string build_initializer_str(const vector<string>& init_strings) const;
 	string build_init_recursive(size_t dimen, const vector<string>& init_strings) const;
+	bool var_attri_aligned;
+	void output_aligned();
 
 	bool array_var_attri_unused;
 

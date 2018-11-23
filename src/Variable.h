@@ -137,6 +137,8 @@ public:
 	virtual void OutputLowerBound(std::ostream &) const;
 	virtual void OutputUpperBound(std::ostream &) const;
 
+	void output_aligned();
+
 	static size_t GetMaxArrayDimension(const vector<Variable*>& vars);
 
 	vector<Variable *> field_vars;    // field variables for struct/unions
@@ -161,6 +163,7 @@ public:
 
 	static const char sink_var_name[];
 //changehere
+	bool var_attri_aligned;
 	bool is_typeof= false;
 	bool is_typeof_used_param = false;
 	bool is_typeof_used_local = false;

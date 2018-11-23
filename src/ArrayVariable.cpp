@@ -64,6 +64,45 @@ using namespace std;
  * count the "key" variable of an binary/unary operation.
  * return 0 for constants, 2 for function calls
  */
+
+void ArrayVariable::output_aligned(){
+
+		int probobility__BIGGEST_ALIGNMENT__ = 38;
+		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+		if (use__BIGGEST_ALIGNMENT__)
+			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+		else{
+			int value = 0;
+			int power = rnd_upto(8);
+			if (power == 0)
+				power++;
+			switch (power){
+				case 1:
+					value = 2;
+					break;
+				case 2:
+					value = 4;
+					break;
+				case 3:
+					value = 8;
+					break;
+				case 4:
+					value = 16;
+					break;
+				case 5:
+					value = 32;
+					break;
+				case 6:
+					value = 64;
+					break;
+				case 7:
+					value = 128;
+					break;
+			}
+			cout << " __attribute__((aligned(" <<value << ")))";
+		}
+}
+
 static int count_expr_key_var(const Expression* e)
 {
 	if (e->term_type == eVariable) {
@@ -195,6 +234,10 @@ ArrayVariable::CreateArrayVariable(const CGContext& cg_context, Block* blk, cons
         if(prob)
                 var->array_var_attri_unused = true;
 
+        if (CGOptions::variable_attribute_aligned()){
+                 if (rnd_flipcoin(VariableAttriAlignedProb))
+                 var->var_attri_aligned = true;
+	}
 	return var;
 }
 
@@ -209,6 +252,7 @@ ArrayVariable::ArrayVariable(Block* blk, const std::string &name, const Type *ty
 {
 	// nothing else to do
 	array_var_attri_unused = false;
+	var_attri_aligned = false;
 }
 
 ArrayVariable::ArrayVariable(const ArrayVariable& av)
@@ -221,6 +265,7 @@ ArrayVariable::ArrayVariable(const ArrayVariable& av)
 {
 	// nothing else to do
 	array_var_attri_unused = false;
+	var_attri_aligned = false;
 }
 /*
  *
@@ -551,6 +596,10 @@ ArrayVariable::OutputDef(std::ostream &out, int indent) const
 			for (i=0; i<sizes.size(); i++) {
 				out << "[" << sizes[i] << "]";
 			}
+			if (var_attri_aligned){
+                                ArrayVariable *av;
+                                av->output_aligned();
+                        }
 			if (array_var_attri_unused)
 				out << " __attribute__((unused))";
 			out << " = " << build_initializer_str(init_strings) << ";";

@@ -594,6 +594,10 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
                  if (rnd_flipcoin(VariableAttriSectionProb))
                          var->var_attri_section = true;
         }
+	if (CGOptions::variable_attribute_aligned()){
+                 if (rnd_flipcoin(VariableAttriAlignedProb))
+                 	var->var_attri_aligned = true;
+	}
 	return var;
 
 }
@@ -637,6 +641,10 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
 	if (CGOptions::variable_attribute_section()){
                  if (rnd_flipcoin(VariableAttriSectionProb))
                          var->var_attri_section = true;
+        }
+	if (CGOptions::variable_attribute_aligned()){
+                 if (rnd_flipcoin(VariableAttriAlignedProb))
+                        var->var_attri_aligned = true;
         }
 	return var;
 }
@@ -990,6 +998,12 @@ VariableSelector::GenerateNewParentLocal(Block &block,
 
         if(prob)
                 var->var_attri_unused = true;
+
+	if (CGOptions::variable_attribute_aligned()){
+                 if (rnd_flipcoin(VariableAttriAlignedProb))
+                        var->var_attri_aligned = true;
+        }
+
 
 	return var;
 }

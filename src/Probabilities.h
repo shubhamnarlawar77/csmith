@@ -69,6 +69,7 @@ enum ProbName {
 	pVariableAttriPackedProb,
 	pLabelAttriHotColdProb,
 	pVariableAttriSection,
+	pVariableAttriAligned,
 
 	// group for statement
 	pStatementProb,
@@ -241,6 +242,9 @@ enum ProbName {
 
 #define VariableAttriSectionProb \
 	Probabilities::get_prob(pVariableAttriSection)
+
+#define VariableAttriAlignedProb \
+	Probabilities::get_prob(pVariableAttriAligned)
 
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \

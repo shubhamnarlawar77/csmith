@@ -260,6 +260,9 @@ public:
 	static bool variable_attribute_packed(void);
 	static bool variable_attribute_packed(bool p);
 
+	static bool variable_attribute_aligned(void);
+        static bool variable_attribute_aligned(bool p);
+
 	static bool uint8(void);
 	static bool uint8(bool p);
 
@@ -597,6 +600,7 @@ private:
 	static bool	variable_attribute_packed_;
 	static bool	uint8_;
 	static bool	variable_attribute_section_;
+	static bool     variable_attribute_aligned_;
 	static bool     Int128_;
         static bool     UInt128_;
 	static bool	binary_;
