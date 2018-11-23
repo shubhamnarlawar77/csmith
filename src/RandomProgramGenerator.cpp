@@ -191,6 +191,7 @@ static void print_help()
 	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
 	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
+	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
 
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
@@ -821,6 +822,16 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-int8") == 0) {
 			CGOptions::int8(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--label-attribute-hot-cold") == 0) {
+			CGOptions::label_attribute_hot_cold(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-label-attribute-hot-cold") == 0) {
+			CGOptions::label_attribute_hot_cold(false);
 			continue;
 		}
 

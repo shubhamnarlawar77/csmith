@@ -951,7 +951,13 @@ Statement::pre_output(std::ostream &out, FactMgr* /* fm */, int indent) const
 	vector<const StatementGoto*> gotos;
 	if (find_jump_sources(gotos)) {
 		assert(gotos.size() > 0);
-		out << gotos[0]->label << ":" << endl;
+		out << gotos[0]->label << ":";
+		if (CGOptions::label_attribute_hot_cold()){
+			if (rnd_flipcoin(LabelAttriHotColdProb)){
+				rnd_flipcoin(50) ? out << "__attribute__((hot))" : out << "__attribute__((cold))";
+			}
+		}
+		out << endl;
 		return 1;
 		//for (j=0; j<gotos.size(); j++) {
 		//	gotos[j]->output_skipped_var_inits(out, indent);

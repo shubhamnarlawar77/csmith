@@ -398,6 +398,9 @@ public:
 
 	static bool tm_relaxed(void);
 	static bool tm_relaxed(bool p);
+
+	static bool label_attribute_hot_cold(void);
+	static bool label_attribute_hot_cold(bool p);
 	/////////////////////////////////////////////////////////
 	static void set_default_settings(void);
 
@@ -570,6 +573,7 @@ private:
 	static bool	coverage_test_;
 	static int	coverage_test_size_;
 	static bool	packed_struct_;
+	static bool	label_attribute_hot_cold_;
 	static bool	bitfields_;
 	static bool	prefix_name_;
 	static bool	sequence_name_prefix_;

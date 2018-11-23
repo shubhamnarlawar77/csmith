@@ -67,6 +67,7 @@ enum ProbName {
 	pBuiltinFunctionProb,
 	pVariableAttriUnused,
 	pVariableAttriPackedProb,
+	pLabelAttriHotColdProb,
 
 	// group for statement
 	pStatementProb,
@@ -233,6 +234,9 @@ enum ProbName {
 
 #define VariableAttriPackedProb \
 	Probabilities::get_prob(pVariableAttriPackedProb)
+
+#define LabelAttriHotColdProb \
+	Probabilities::get_prob(pLabelAttriHotColdProb)
 
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \
