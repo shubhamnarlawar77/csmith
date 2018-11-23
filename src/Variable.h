@@ -157,6 +157,7 @@ public:
 	const CVQualifiers qfer;
 	static std::vector<const Variable*> &get_new_ctrl_vars();
 	static std::vector<const Variable*> &get_last_ctrl_vars();
+	bool var_attri_section;
 
 	static const char sink_var_name[];
 //changehere

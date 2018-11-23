@@ -244,6 +244,10 @@ public:
 	static bool inline_function(void);
 	static bool inline_function(bool p);
 
+	static bool variable_attribute_section(void);
+        static bool variable_attribute_section(bool p);
+
+
 	static bool stmt_expr(void);
 	static bool stmt_expr(bool p);
 
@@ -592,6 +596,7 @@ private:
 	static bool	int8_;
 	static bool	variable_attribute_packed_;
 	static bool	uint8_;
+	static bool	variable_attribute_section_;
 	static bool     Int128_;
         static bool     UInt128_;
 	static bool	binary_;
