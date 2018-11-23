@@ -580,6 +580,15 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 			cout << "complex ";
 		cout <<"\t type "<< t->simple_type;
 	}
+	int prob = 0;
+	if(CGOptions::variable_attribute_unused()){
+		prob = rnd_flipcoin(VariableAttriUnusedProb);
+	}
+	else
+		prob = 0;
+
+	if(prob)
+		var->var_attri_unused = true;
 	return var;
 
 }
@@ -1172,16 +1181,6 @@ VariableSelector::GenerateNewVariable(Effect::Access access,
 	}
 	ERROR_GUARD(NULL);
 	var_created = true;
-
-	int prob = 0;
-        if(CGOptions::variable_attribute_unused()){
-                prob = rnd_flipcoin(VariableAttriUnusedProb);
-        }
-        else
-                prob = 0;
-
-        if(prob)
-                var->var_attri_unused = true;
 
 	return var;
 }
