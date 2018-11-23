@@ -436,6 +436,7 @@ Variable::Variable(const std::string &name, const Type *type,
 	  qfer(isConsts, isVolatiles)
 {
 	var_attri_unused = false;
+	var_attri_section = false;
 	// nothing else to do
 	is_typeof=false;
 }
@@ -452,6 +453,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  qfer(*qfer)
 {
 	var_attri_unused = false;
+	var_attri_section = false;
 	// nothing else to do
 }
 
@@ -465,6 +467,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  qfer(*qfer)
 {
 	var_attri_unused = false;
+	var_attri_section = false;
 	// nothing else to do
 	is_typeof=false;
 }
@@ -683,6 +686,12 @@ Variable::OutputDef(std::ostream &out, int indent) const
 	output_qualified_type(out);
 
 	out << get_actual_name();
+        static int i;
+        if (var_attri_section){
+                out << " __attribute__((section(\"usersection";
+                out << i++ << "\")))";
+        }
+
         if (var_attri_unused)
                 out << " __attribute__((unused))";
         out << " = ";

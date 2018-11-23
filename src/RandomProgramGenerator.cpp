@@ -192,6 +192,7 @@ static void print_help()
 	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
 	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-section | --no-variable-attribute-section: enable | disable variable attribute section extension. (disable by default)" << endl << endl;
 
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
@@ -804,6 +805,17 @@ main(int argc, char **argv)
 			CGOptions::stmt_expr(false);
 			continue;
 		}
+
+		if (strcmp (argv[i], "--variable-attribute-section") == 0) {
+                        CGOptions::variable_attribute_section(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-variable-attribute-section") == 0) {
+                        CGOptions::variable_attribute_section(false);
+                        continue;
+                }
+
 
 		if (strcmp (argv[i], "--longlong") == 0) {
 			CGOptions::longlong(true);

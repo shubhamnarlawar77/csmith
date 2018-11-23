@@ -589,6 +589,11 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 
 	if(prob)
 		var->var_attri_unused = true;
+
+	if (CGOptions::variable_attribute_section()){
+                 if (rnd_flipcoin(VariableAttriSectionProb))
+                         var->var_attri_section = true;
+        }
 	return var;
 
 }
@@ -629,6 +634,10 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
 	if(prob)
 		var->var_attri_unused = true;
 
+	if (CGOptions::variable_attribute_section()){
+                 if (rnd_flipcoin(VariableAttriSectionProb))
+                         var->var_attri_section = true;
+        }
 	return var;
 }
 
