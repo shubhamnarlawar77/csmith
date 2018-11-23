@@ -516,6 +516,7 @@ VariableSelector::create_and_initialize(Effect::Access access, const CGContext &
 		var = new_variable(name, t, init, qfer);
 	}
 	assert(var);
+
 	return var;
 }
 
@@ -608,6 +609,17 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
 		GlobalNonvolatilesList.push_back(var);
 	}
 	var_created = true;
+
+	int prob = 0;
+	if(CGOptions::variable_attribute_unused()){
+		prob = rnd_flipcoin(VariableAttriUnusedProb);
+	}
+	else
+		prob = 0;
+
+	if(prob)
+		var->var_attri_unused = true;
+
 	return var;
 }
 
@@ -950,6 +962,17 @@ VariableSelector::GenerateNewParentLocal(Block &block,
 	FactMgr* fm = get_fact_mgr(&cg_context);
 	fm->add_new_var_fact_and_update_inout_maps(blk, var->get_collective());
 	var_created = true;
+
+	int prob = 0;
+        if(CGOptions::variable_attribute_unused()){
+                prob = rnd_flipcoin(VariableAttriUnusedProb);
+        }
+        else
+                prob = 0;
+
+        if(prob)
+                var->var_attri_unused = true;
+
 	return var;
 }
 
@@ -1149,6 +1172,17 @@ VariableSelector::GenerateNewVariable(Effect::Access access,
 	}
 	ERROR_GUARD(NULL);
 	var_created = true;
+
+	int prob = 0;
+        if(CGOptions::variable_attribute_unused()){
+                prob = rnd_flipcoin(VariableAttriUnusedProb);
+        }
+        else
+                prob = 0;
+
+        if(prob)
+                var->var_attri_unused = true;
+
 	return var;
 }
 

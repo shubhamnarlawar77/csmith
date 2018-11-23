@@ -188,6 +188,8 @@ static void print_help()
 	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
 
 	// numbered controls
@@ -832,6 +834,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		if (strcmp (argv[i], "--variable-attribute-packed") == 0) {
+			CGOptions::variable_attribute_packed(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-variable-attribute-packed") == 0) {
+			CGOptions::variable_attribute_packed(false);
+			continue;
+		}
+
 		if (strcmp (argv[i], "--uint8") == 0) {
 			CGOptions::uint8(true);
 			continue;
@@ -841,6 +853,17 @@ main(int argc, char **argv)
 			CGOptions::uint8(false);
 			continue;
 		}
+
+		if (strcmp (argv[i], "--variable-attribute-unused") == 0) {
+                        CGOptions::variable_attribute_unused(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-variable-attribute-unused") == 0) {
+                        CGOptions::variable_attribute_unused(false);
+                        continue;
+                }
+
 
 		if (strcmp (argv[i], "--int128") == 0) {
                         CGOptions::Int128(true);

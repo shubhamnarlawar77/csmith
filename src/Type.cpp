@@ -292,6 +292,7 @@ Type::Type(eSimpleType simple_type) :
 	has_assign_ops_(false),
 	has_implicit_nontrivial_assign_ops_(false)
 {
+	var_attri_packed_for_struct =false;
 	// Nothing else to do.
 }
 
@@ -311,6 +312,7 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
     qfers_(qfers),
     bitfields_length_(fields_length)
 {
+	var_attri_packed_for_struct =false;
     static unsigned int sequence = 0;
 	if (isStruct)
         eType = eStruct;
@@ -332,6 +334,7 @@ Type::Type(const Type* t) :
     has_assign_ops_(false),
     has_implicit_nontrivial_assign_ops_(false)
 {
+	var_attri_packed_for_struct =false;
 	// Nothing else to do.
 }
 
@@ -1250,6 +1253,19 @@ GenerateAllTypes(void)
 		    AllTypes.push_back(ty);
 	    }
     }
+	//we are setting the probability 
+	if (CGOptions::variable_attribute_packed()){
+		for (int i=0; i<AllTypes.size(); i++)
+		{
+        		Type* t = AllTypes[i];
+			//restricting only to struct for now , If needed ask andi and can change to union if he suggests
+		       	if ( (t->eType == eStruct )) {
+        		    	if(rnd_flipcoin(VariableAttriPackedProb))
+					t->var_attri_packed_for_struct = true;
+       			}
+   		}
+	}
+
 }
 
 // ---------------------------------------------------------------------
@@ -1901,7 +1917,8 @@ void OutputStructUnion(Type* type, std::ostream &out)
             }
         }
         // output myself
-        if (type->packed_) {
+	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
+        if (type->packed_ && !CGOptions::variable_attribute_packed()) {
             if (!CGOptions::ccomp()) {
                 out << "#pragma pack(push)";
                 really_outputln(out);
@@ -1952,9 +1969,17 @@ void OutputStructUnion(Type* type, std::ostream &out)
 			OutputUnionAssignOps(type, out, true);
 		}
 
-        out << "};";
+        out << "}";
+	//@end of struct defination
+	if (CGOptions::variable_attribute_packed()){
+		if (type->var_attri_packed_for_struct){
+				out << " __attribute__((packed))";
+		}
+	}
+	out << ";";
 		really_outputln(out);
-        if (type->packed_) {
+	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
+        if (type->packed_ && !CGOptions::variable_attribute_packed()) {
 		if (CGOptions::ccomp()) {
 			out << "#pragma pack()";
 		}

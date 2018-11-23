@@ -84,6 +84,8 @@ public:
 	string build_initializer_str(const vector<string>& init_strings) const;
 	string build_init_recursive(size_t dimen, const vector<string>& init_strings) const;
 
+	bool array_var_attri_unused;
+
 	const ArrayVariable* collective;
 	Block* parent;
 private:

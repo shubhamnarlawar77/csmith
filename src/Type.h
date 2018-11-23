@@ -273,7 +273,7 @@ public:
 	std::string printf_directive(void) const;
 	static Type* find_pointer_type(const Type* t, bool add);
 	static Type* find_type(const Type* t);
-
+	bool var_attri_packed_for_struct;
 // private:
 	eTypeDesc eType;
 	const Type *ptr_type;

@@ -163,6 +163,7 @@ public:
 	bool is_typeof= false;
 	bool is_typeof_used_param = false;
 	bool is_typeof_used_local = false;
+	bool var_attri_unused;
 private:
 	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
 	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const Variable* isFieldVarOf, bool isArray);

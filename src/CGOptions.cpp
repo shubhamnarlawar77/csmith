@@ -140,6 +140,7 @@ DEFINE_GETTER_SETTER_BOOL(math_notmp)
 DEFINE_GETTER_SETTER_BOOL(longlong)
 DEFINE_GETTER_SETTER_BOOL(int8)
 DEFINE_GETTER_SETTER_BOOL(uint8)
+DEFINE_GETTER_SETTER_BOOL(variable_attribute_packed)
 DEFINE_GETTER_SETTER_BOOL(enable_float)
 DEFINE_GETTER_SETTER_BOOL(strict_float)
 DEFINE_GETTER_SETTER_BOOL(pointers)
@@ -211,6 +212,7 @@ DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
 
 DEFINE_GETTER_SETTER_BOOL(type_of);
 DEFINE_GETTER_SETTER_BOOL(binary);
+DEFINE_GETTER_SETTER_BOOL(variable_attribute_unused);
 
 void
 CGOptions::set_default_builtin_kinds()
@@ -273,6 +275,7 @@ CGOptions::set_default_settings(void)
 	longlong(true);
 	int8(true);
 	uint8(true);
+	variable_attribute_packed(true);
 	enable_float(false);
 	strict_float(false);
 	pointers(true);
@@ -324,6 +327,7 @@ CGOptions::set_default_settings(void)
 	const_struct_union_fields(true);
 	Int128(false);
 	UInt128(false);
+	variable_attribute_unused(false);
 
 	addr_taken_of_locals(true);
 	lang_cpp(false);
