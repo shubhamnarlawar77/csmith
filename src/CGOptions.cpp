@@ -210,6 +210,7 @@ DEFINE_GETTER_SETTER_BOOL(computed_goto);
 DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
 
 DEFINE_GETTER_SETTER_BOOL(type_of);
+DEFINE_GETTER_SETTER_BOOL(binary);
 
 void
 CGOptions::set_default_builtin_kinds()
@@ -334,6 +335,7 @@ CGOptions::set_default_settings(void)
 	computed_goto(false);
 	tm_relaxed(false);
 	type_of(false);
+	binary(false);
 }
 
 // Add options necessary for cpp 
