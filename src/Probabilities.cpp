@@ -492,6 +492,9 @@ Probabilities::set_single_name_maps()
 	// for choosing variable attributes unused
 	set_single_name("variable_attribute_packed", pVariableAttriPackedProb);
 
+	// for choosing label attribute hot/cold prob
+	set_single_name("label_attributes_hot_cold_prob", pLabelAttriHotColdProb);
+
         //////////////////////////////////////////////////////////////////
 	// group for statement
 	set_single_name("statement_prob", pStatementProb);
@@ -608,6 +611,7 @@ Probabilities::initialize_single_probs()
 	m[pBuiltinFunctionProb] = CGOptions::builtin_function_prob();
 	m[pVariableAttriUnused] = 50;
 	m[pVariableAttriPackedProb] = 80;
+	m[pLabelAttriHotColdProb] = 100;
 
 	std::map<ProbName, int>::iterator i;
 	for (i = m.begin(); i != m.end(); ++i) {

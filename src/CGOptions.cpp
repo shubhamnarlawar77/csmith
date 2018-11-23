@@ -123,6 +123,7 @@ DEFINE_GETTER_SETTER_BOOL(ccomp)
 DEFINE_GETTER_SETTER_BOOL(coverage_test)
 DEFINE_GETTER_SETTER_INT(coverage_test_size)
 DEFINE_GETTER_SETTER_BOOL(packed_struct)
+DEFINE_GETTER_SETTER_BOOL(label_attribute_hot_cold)
 DEFINE_GETTER_SETTER_BOOL(bitfields)
 DEFINE_GETTER_SETTER_BOOL(prefix_name)
 DEFINE_GETTER_SETTER_BOOL(sequence_name_prefix)
@@ -276,6 +277,7 @@ CGOptions::set_default_settings(void)
 	int8(true);
 	uint8(true);
 	variable_attribute_packed(true);
+	label_attribute_hot_cold(false);
 	enable_float(false);
 	strict_float(false);
 	pointers(true);
