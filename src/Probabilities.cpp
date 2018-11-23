@@ -486,6 +486,9 @@ Probabilities::set_single_name_maps()
 	// for choosing a builtin function
 	set_single_name("builtin_function_prob", pBuiltinFunctionProb);
 
+	// for choosing variable attribute unused
+	set_single_name("variable_attributes_prob", pVariableAttriUnused);
+
         //////////////////////////////////////////////////////////////////
 	// group for statement
 	set_single_name("statement_prob", pStatementProb);
@@ -600,6 +603,7 @@ Probabilities::initialize_single_probs()
 	m[pAccessOnceVariableProb] = 20;
 	m[pInlineFunctionProb] = CGOptions::inline_function_prob();
 	m[pBuiltinFunctionProb] = CGOptions::builtin_function_prob();
+	m[pVariableAttriUnused] = 50;
 
 	std::map<ProbName, int>::iterator i;
 	for (i = m.begin(); i != m.end(); ++i) {

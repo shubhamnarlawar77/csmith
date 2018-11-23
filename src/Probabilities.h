@@ -65,6 +65,7 @@ enum ProbName {
 	pAccessOnceVariableProb,
 	pInlineFunctionProb,
 	pBuiltinFunctionProb,
+	pVariableAttriUnused,
 
 	// group for statement
 	pStatementProb,
@@ -225,6 +226,9 @@ enum ProbName {
 
 #define BuiltinFunctionProb \
 	Probabilities::get_prob(pBuiltinFunctionProb)
+
+#define VariableAttriUnusedProb \
+	Probabilities::get_prob(pVariableAttriUnused)
 
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \

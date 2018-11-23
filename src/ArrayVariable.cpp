@@ -184,6 +184,17 @@ ArrayVariable::CreateArrayVariable(const CGContext& cg_context, Block* blk, cons
 
 	// add it to global list or local variable list
 	blk? blk->local_vars.push_back(var) : VariableSelector::GetGlobalVariables()->push_back(var);
+
+	int prob = 0;
+        if(CGOptions::variable_attribute_unused()){
+                prob = rnd_flipcoin(VariableAttriUnusedProb);
+        }
+        else
+                prob = 0;
+
+        if(prob)
+                var->array_var_attri_unused = true;
+
 	return var;
 }
 
@@ -197,6 +208,7 @@ ArrayVariable::ArrayVariable(Block* blk, const std::string &name, const Type *ty
 	  sizes(sizes)
 {
 	// nothing else to do
+	array_var_attri_unused = false;
 }
 
 ArrayVariable::ArrayVariable(const ArrayVariable& av)
@@ -208,6 +220,7 @@ ArrayVariable::ArrayVariable(const ArrayVariable& av)
 	init_values(av.init_values)
 {
 	// nothing else to do
+	array_var_attri_unused = false;
 }
 /*
  *
@@ -538,6 +551,8 @@ ArrayVariable::OutputDef(std::ostream &out, int indent) const
 			for (i=0; i<sizes.size(); i++) {
 				out << "[" << sizes[i] << "]";
 			}
+			if (array_var_attri_unused)
+				out << " __attribute__((unused))";
 			out << " = " << build_initializer_str(init_strings) << ";";
 			outputln(out);
 		}

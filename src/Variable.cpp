@@ -435,6 +435,7 @@ Variable::Variable(const std::string &name, const Type *type,
 	  field_var_of(isFieldVarOf), isArray(false),
 	  qfer(isConsts, isVolatiles)
 {
+	var_attri_unused = false;
 	// nothing else to do
 	is_typeof=false;
 }
@@ -450,6 +451,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  field_var_of(0), isArray(false),
 	  qfer(*qfer)
 {
+	var_attri_unused = false;
 	// nothing else to do
 }
 
@@ -462,6 +464,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  isArray(isArray),
 	  qfer(*qfer)
 {
+	var_attri_unused = false;
 	// nothing else to do
 	is_typeof=false;
 }
@@ -679,7 +682,11 @@ Variable::OutputDef(std::ostream &out, int indent) const
 	}
 	output_qualified_type(out);
 
-	out << get_actual_name() << " = ";
+	out << get_actual_name();
+        if (var_attri_unused)
+                out << " __attribute__((unused))";
+        out << " = ";
+
 	assert(init);
 	init->Output(out);
 	out << ";";

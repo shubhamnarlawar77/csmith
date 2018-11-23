@@ -259,6 +259,9 @@ public:
 	static bool Int128(void);
         static bool Int128(bool p);
 
+	static bool variable_attribute_unused(void);
+        static bool variable_attribute_unused(bool p);
+
 	static bool double_enable(void);
 	static bool double_enable(bool p);
 
@@ -662,6 +665,7 @@ private:
 	//extensions
 	static bool computed_goto_;
 	static bool tm_relaxed_;
+	static bool variable_attribute_unused_;
 private:
 	CGOptions(void);
 	CGOptions(CGOptions &cgo);
