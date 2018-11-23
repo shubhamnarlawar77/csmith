@@ -184,6 +184,7 @@ static void print_help()
 	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
 	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
@@ -846,6 +847,17 @@ main(int argc, char **argv)
 			CGOptions::label_attribute_hot_cold(false);
 			continue;
 		}
+
+		if (strcmp (argv[i], "--variable-attribute-aligned") == 0) {
+                        CGOptions::variable_attribute_aligned(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-variable-attribute-aligned") == 0) {
+                        CGOptions::variable_attribute_aligned(false);
+                        continue;
+                }
+
 
 		if (strcmp (argv[i], "--loc-labels") == 0) {
 			CGOptions::local_labels(true);

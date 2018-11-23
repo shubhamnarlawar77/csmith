@@ -78,6 +78,45 @@ unsigned long Variable::ctrl_vars_count;
 
 const char Variable::sink_var_name[] = "csmith_sink_";
 
+void Variable::output_aligned(){
+
+		int probobility__BIGGEST_ALIGNMENT__ = 38;
+		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+		if (use__BIGGEST_ALIGNMENT__)
+			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+		else{
+			int value = 0;
+			int power = rnd_upto(8);
+			if (power == 0)
+				power++;
+			switch (power){
+				case 1:
+					value = 2;
+					break;
+				case 2:
+					value = 4;
+					break;
+				case 3:
+					value = 8;
+					break;
+				case 4:
+					value = 16;
+					break;
+				case 5:
+					value = 32;
+					break;
+				case 6:
+					value = 64;
+					break;
+				case 7:
+					value = 128;
+					break;
+			}
+			cout << " __attribute__((aligned(" <<value << ")))";
+		}
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 int find_variable_in_set(const vector<const Variable*>& set, const Variable* v)
@@ -439,6 +478,7 @@ Variable::Variable(const std::string &name, const Type *type,
 	var_attri_section = false;
 	// nothing else to do
 	is_typeof=false;
+	var_attri_aligned = false;
 }
 
 /*
@@ -455,6 +495,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	var_attri_unused = false;
 	var_attri_section = false;
 	// nothing else to do
+	var_attri_aligned = false;
 }
 
 Variable::Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const Variable* isFieldVarOf, bool isArray)
@@ -470,6 +511,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	var_attri_section = false;
 	// nothing else to do
 	is_typeof=false;
+	var_attri_aligned = false;
 }
 
 /*
@@ -686,6 +728,10 @@ Variable::OutputDef(std::ostream &out, int indent) const
 	output_qualified_type(out);
 
 	out << get_actual_name();
+	if (var_attri_aligned){
+                Variable *var;
+                var->output_aligned();
+        }
         static int i;
         if (var_attri_section){
                 out << " __attribute__((section(\"usersection";

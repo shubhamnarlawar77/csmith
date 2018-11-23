@@ -498,6 +498,9 @@ Probabilities::set_single_name_maps()
 	// for choosing variable attributes section
 	set_single_name("variable_attributes_section_prob", pVariableAttriSection);
 
+	// for choosing variable attributes unused
+	set_single_name("variable_attribute_aligned", pVariableAttriAligned);
+
         //////////////////////////////////////////////////////////////////
 	// group for statement
 	set_single_name("statement_prob", pStatementProb);
@@ -616,6 +619,7 @@ Probabilities::initialize_single_probs()
 	m[pVariableAttriPackedProb] = 80;
 	m[pLabelAttriHotColdProb] = 100;
 	m[pVariableAttriSection] = 90;
+	m[pVariableAttriAligned] = 50;
 
 	std::map<ProbName, int>::iterator i;
 	for (i = m.begin(); i != m.end(); ++i) {

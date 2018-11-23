@@ -274,6 +274,8 @@ public:
 	static Type* find_pointer_type(const Type* t, bool add);
 	static Type* find_type(const Type* t);
 	bool var_attri_packed_for_struct;
+	bool var_attri_aligned_for_struct;
+        void output_aligned();
 // private:
 	eTypeDesc eType;
 	const Type *ptr_type;

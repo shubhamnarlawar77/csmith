@@ -137,6 +137,7 @@ DEFINE_GETTER_SETTER_BOOL(no_delta_reduction)
 DEFINE_GETTER_SETTER_BOOL(math64)
 DEFINE_GETTER_SETTER_BOOL(inline_function)
 DEFINE_GETTER_SETTER_BOOL(variable_attribute_section)
+DEFINE_GETTER_SETTER_BOOL(variable_attribute_aligned)
 DEFINE_GETTER_SETTER_BOOL(stmt_expr)
 DEFINE_GETTER_SETTER_BOOL(math_notmp)
 DEFINE_GETTER_SETTER_BOOL(longlong)
@@ -274,6 +275,7 @@ CGOptions::set_default_settings(void)
 	inline_function(false);
 	stmt_expr(false);
 	variable_attribute_section(false);
+	variable_attribute_aligned(false);
 	math_notmp(false);
 	longlong(true);
 	int8(true);

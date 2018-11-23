@@ -72,6 +72,45 @@ static vector<Type *> AllTypes;
 static vector<Type *> derived_types;
 
 //////////////////////////////////////////////////////////////////////
+
+void Type::output_aligned(){
+
+		int probobility__BIGGEST_ALIGNMENT__ = 38;
+		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+		if (use__BIGGEST_ALIGNMENT__)
+			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+		else{
+			int value = 0;
+			int power = rnd_upto(8);
+			if (power == 0)
+				power++;
+			switch (power){
+				case 1:
+					value = 2;
+					break;
+				case 2:
+					value = 4;
+					break;
+				case 3:
+					value = 8;
+					break;
+				case 4:
+					value = 16;
+					break;
+				case 5:
+					value = 32;
+					break;
+				case 6:
+					value = 64;
+					break;
+				case 7:
+					value = 128;
+					break;
+			}
+			cout << " __attribute__((aligned(" <<value << ")))";
+		}
+}
+
 class NonVoidTypeFilter : public Filter
 {
 public:
@@ -294,6 +333,7 @@ Type::Type(eSimpleType simple_type) :
 {
 	var_attri_packed_for_struct =false;
 	// Nothing else to do.
+	var_attri_aligned_for_struct =false;
 }
 
 // --------------------------------------------------------------
@@ -313,6 +353,7 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
     bitfields_length_(fields_length)
 {
 	var_attri_packed_for_struct =false;
+	var_attri_aligned_for_struct =false;
     static unsigned int sequence = 0;
 	if (isStruct)
         eType = eStruct;
@@ -336,6 +377,7 @@ Type::Type(const Type* t) :
 {
 	var_attri_packed_for_struct =false;
 	// Nothing else to do.
+	var_attri_aligned_for_struct =false;
 }
 
 // --------------------------------------------------------------
@@ -1955,7 +1997,12 @@ void OutputStructUnion(Type* type, std::ostream &out)
 			}
 			else {
 				type->qfers_[i].output_qualified_type(field, out);
-				out << " f" << j++ << ";";
+				out << " f" << j++ ;
+			      	if (type->var_attri_aligned_for_struct){
+                			Type *type;
+                			type->output_aligned();
+        			}
+                                out << ";";
 			}
 			really_outputln(out);
         }
@@ -1970,6 +2017,11 @@ void OutputStructUnion(Type* type, std::ostream &out)
 		}
 
         out << "}";
+       if (type->var_attri_aligned_for_struct){
+               Type *type;
+               type->output_aligned();
+       }
+
 	//@end of struct defination
 	if (CGOptions::variable_attribute_packed()){
 		if (type->var_attri_packed_for_struct){
@@ -1991,6 +2043,17 @@ void OutputStructUnion(Type* type, std::ostream &out)
         type->printed = true;
 		really_outputln(out);
     }
+	//we are setting the probability , JOYTO- use CLI option for below block
+    if (CGOptions::variable_attribute_aligned()){
+	for (int i=0; i<AllTypes.size(); i++)
+	{
+        	Type* t = AllTypes[i];
+	        if ( (t->eType == eStruct || t->eType == eUnion)) {
+        	    	if(rnd_flipcoin(VariableAttriAlignedProb))
+				t->var_attri_aligned_for_struct = true;
+       		}
+   	}
+   }
 }
 
 // ---------------------------------------------------------------------
