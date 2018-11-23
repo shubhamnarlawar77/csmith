@@ -204,6 +204,7 @@ DEFINE_GETTER_SETTER_BOOL(const_struct_union_fields);
 DEFINE_GETTER_SETTER_BOOL(lang_cpp);
 DEFINE_GETTER_SETTER_BOOL(cpp11);
 DEFINE_GETTER_SETTER_BOOL(fast_execution);
+DEFINE_GETTER_SETTER_BOOL(complex);
 //extensions
 DEFINE_GETTER_SETTER_BOOL(computed_goto);
 DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
@@ -318,6 +319,7 @@ CGOptions::set_default_settings(void)
 	use_comma_exprs(true);
 	take_union_field_addr(true);
 	vol_struct_union_fields(true);
+	complex(false);
 	const_struct_union_fields(true);
 	Int128(false);
 	UInt128(false);

@@ -603,6 +603,12 @@ CVQualifiers::output_qualified_type_of_typeof(const Type* t, std::ostream &out) 
 			if (i > 0) out << " ";
 			out << "volatile ";
 		}
+		if(this->is_qualifier_complex()){
+			if (!CGOptions::complex())
+				assert(0);
+			if (i > 0) out << " ";
+			out << "_Complex ";
+		}
 		if (i==0) {
 			out << "typeof(" << this->get_typeof_replace_var() << ")" ;
 			out << " ";
@@ -632,6 +638,12 @@ CVQualifiers::output_qualified_type(const Type* t, std::ostream &out) const
 				assert(0);
 			if (i > 0) out << " ";
 			out << "volatile ";
+		}
+		if(is_qualifier_complex()){
+			if (!CGOptions::complex())
+				assert(0);
+			if (i > 0) out << " ";
+			out << "_Complex ";
 		}
 		if (i==0) {
 			base->Output(out);
@@ -760,4 +772,12 @@ CVQualifiers::set_typeof_replace_var(string global_var_name) const{
 string
 CVQualifiers::get_typeof_replace_var() const{
         return typeof_replace_var;
+}
+void
+CVQualifiers::set_complex(bool complex_value) const{
+	this->is_complex = complex_value;
+}
+bool
+CVQualifiers::is_qualifier_complex() const {
+	return this->is_complex;
 }

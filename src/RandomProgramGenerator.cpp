@@ -173,11 +173,11 @@ static void print_help()
 	cout << "  --float | --no-float: enable | disable float (disabled by default)." << endl << endl;
 	cout << "  --main | --nomain: enable | disable to generate main function (enabled by default)." << endl <<  endl;
 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
-	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
 
-	//extensions 
+	//extensions
+	cout << "  -------------------------------------------GCC C Extensions-----------------------------------------" << endl << endl;
 	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
 	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
 	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
@@ -185,6 +185,10 @@ static void print_help()
 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
+	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
+	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
+
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -868,6 +872,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		
+		if (strcmp (argv[i], "--complex") == 0) {
+                        CGOptions::complex(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-complex") == 0) {
+                        CGOptions::complex(false);
+                        continue;
+                }
 
 		if (strcmp (argv[i], "--float") == 0) {
 			CGOptions::enable_float(true);

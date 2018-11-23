@@ -151,7 +151,8 @@ private:
 
 	static Variable * create_and_initialize(Effect::Access access, const CGContext &cg_context, const Type* t,
 					const CVQualifiers* qfer, Block *blk, std::string name);
-
+	static Variable * create_and_initialize_complex (Effect::Access access, const CGContext &cg_context, const Type* t,
+					const CVQualifiers* qfer, Block *blk, std::string name);
 	// all variables generated
 	static vector<Variable*> AllVars;
 
