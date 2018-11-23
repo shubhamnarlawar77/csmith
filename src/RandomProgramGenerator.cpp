@@ -189,6 +189,7 @@ static void print_help()
 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
 	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
 
 	// numbered controls
@@ -830,6 +831,16 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-loc-labels") == 0) {
 			CGOptions::local_labels(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--variable-attribute-packed") == 0) {
+			CGOptions::variable_attribute_packed(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-variable-attribute-packed") == 0) {
+			CGOptions::variable_attribute_packed(false);
 			continue;
 		}
 

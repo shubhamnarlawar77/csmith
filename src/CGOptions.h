@@ -253,6 +253,9 @@ public:
 	static bool int8(void);
 	static bool int8(bool p);
 
+	static bool variable_attribute_packed(void);
+	static bool variable_attribute_packed(bool p);
+
 	static bool uint8(void);
 	static bool uint8(bool p);
 
@@ -583,6 +586,7 @@ private:
 	static bool	math_notmp_;
 	static bool	longlong_;
 	static bool	int8_;
+	static bool	variable_attribute_packed_;
 	static bool	uint8_;
 	static bool     Int128_;
         static bool     UInt128_;
