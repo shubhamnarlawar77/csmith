@@ -439,11 +439,19 @@ GenerateRandomStructConstant(const Type* type)
 static string
 GenerateRandomUnionConstant(const Type* type)
 {
-	string value = "{";
-	assert(type->eType == eUnion && type->fields.size() == type->bitfields_length_.size());
-	value += GenerateRandomConstant(type->fields[0]);
-	value += "}";
-	return value;
+        ostringstream oss;
+        oss.clear();
+	if (CGOptions::union_cast()){
+		unsigned int temp = type->sid;
+	        oss << "(union U";
+        	oss << temp;
+        	oss << ")";
+	}
+        oss << " {";
+        assert(type->eType == eUnion && type->fields.size() == type->bitfields_length_.size());
+        oss << GenerateRandomConstant(type->fields[0]);
+        oss << " }";
+        return oss.str();
 }
 
 static string

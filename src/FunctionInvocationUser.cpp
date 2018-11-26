@@ -419,6 +419,11 @@ OutputActualParamExpression(const Expression *expr, std::ostream *pOut)
 		out << ", ";
 	}
 	needcomma.back() = true;
+	if (CGOptions::union_cast()){
+		const Type *type_of_parameter = & (expr->get_type());
+		if (type_of_parameter->eType == eUnion)
+			out << "( union " << "U" << type_of_parameter->sid << " )";
+	}
 	expr->Output(out);
     // for MSVC: must return something to be able to pass to a "map" function
     return 0;
