@@ -1,20 +1,31 @@
 -*- mode: Text -*-
 
-                  Csmith --- a random generator of C programs
+                  extending Csmith for GCC C language extensions--- a random generator of C programs with gcc C language extensions
 
+for information about original Csmith:
               Xuejun Yang, Yang Chen, Eric Eide, and John Regehr
                   {jxyang,chenyang,eeide,regehr}@cs.utah.edu
 
                     University of Utah School of Computing
                             http://www.cs.utah.edu/
                                        
-
-Please send bug reports and fixes to <csmith-bugs@flux.utah.edu>.
-
-There is a mailing list, <csmith-dev@flux.utah.edu>, for discussing Csmith.
-Visit <http://www.flux.utah.edu/mailman/listinfo/csmith-dev> to subscribe.
-To post messages to the list, you must first subscribe to the list.
-
+for information related to Csmith with GCC extensions:
+  joshisameeran17@gmail.com
+  shubhamnarlawar123@gmail.com
+  
+Extended Csmith can be built using the same way as of csmith.
+you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
+  ./csmith --help
+and generate a C program for extension using the command line option
+  
+The folder named testing_scripts contains script for
+  1.compiler crash 
+  2.output checksum checking 
+  for both GCC and Clang
+  
 Most Csmith info can be found here:
 
   http://embed.cs.utah.edu/csmith/
+  
+Information about gcc C language extensions can be found here:
+  https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/C-Extensions.html#C-Extensions

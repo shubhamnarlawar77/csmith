@@ -175,26 +175,7 @@ static void print_help()
 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
-
-	//extensions
-	cout << "  -------------------------------------------GCC C Extensions-----------------------------------------" << endl << endl;
-	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
-	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
-	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
-	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
-	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
-        cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
-	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
-	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
-	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
-	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
-	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
-	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
-	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
-	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
-	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
-	cout << "  --variable-attribute-section | --no-variable-attribute-section: enable | disable variable attribute section extension. (disable by default)" << endl << endl;
-
+	
 	// numbered controls
 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
@@ -226,6 +207,29 @@ static void print_help()
         // language options
 	cout << "  --lang-cpp : generate C++ code (C by default)." << endl << endl;
 	cout << "  --cpp11 : generate C++11 code (C++03 by default). Works if lang-cpp is enabled." << endl << endl;
+	
+	//extensions
+	cout << "  -------------------------------------------GCC C Extensions-----------------------------------------" << endl << endl;
+	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
+	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
+	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
+	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
+	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
+        cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
+	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
+	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
+	cout << "  //variable attributes " << endl << endl;
+	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
+	cout << "  --variable-attribute-section | --no-variable-attribute-section: enable | disable variable attribute section extension. (disable by default)" << endl << endl;
+	cout << "  //label attributes " << endl << endl;
+	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
+	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
+	
+
 
 }
 
