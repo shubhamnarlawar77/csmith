@@ -220,6 +220,7 @@ static void print_help()
 	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
 	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
+	cout << "  --union-cast | --no-union-cast: enable | disable casting of union variable (disabled by default)." << endl << endl;
 	cout << "  //variable attributes " << endl << endl;
 	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
 	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
@@ -934,6 +935,15 @@ main(int argc, char **argv)
                         continue;
                 }
 
+		if (strcmp (argv[i], "--union-cast") == 0) {
+                        CGOptions::union_cast(true);
+                        continue;
+                }
+
+                if (strcmp (argv[i], "--no-union-cast") == 0) {
+                        CGOptions::union_cast(false);
+                        continue;
+                }
 
                 if (strcmp (argv[i], "--uint128") == 0) {
                         CGOptions::UInt128(true);
