@@ -1297,7 +1297,8 @@ GenerateAllTypes(void)
     }
 	//we are setting the probability 
 	if (CGOptions::variable_attribute_packed()){
-		for (int i=0; i<AllTypes.size(); i++)
+		size_t i;
+		for (i=0; i<AllTypes.size(); i++)
 		{
         		Type* t = AllTypes[i];
 			//restricting only to struct for now , If needed ask andi and can change to union if he suggests
@@ -2045,7 +2046,8 @@ void OutputStructUnion(Type* type, std::ostream &out)
     }
 	//we are setting the probability , JOYTO- use CLI option for below block
     if (CGOptions::variable_attribute_aligned()){
-	for (int i=0; i<AllTypes.size(); i++)
+	size_t i;
+	for (i=0; i<AllTypes.size(); i++)
 	{
         	Type* t = AllTypes[i];
 	        if ( (t->eType == eStruct || t->eType == eUnion)) {
