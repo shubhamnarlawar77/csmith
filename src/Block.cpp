@@ -900,7 +900,8 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
 }
 void
 Block::outputlocal_labels () const{
-		for (int i =0 ;i < this->labels_in_block.size(); i++){
+		size_t i;
+		for (i =0 ;i < this->labels_in_block.size(); i++){
 			if (i == 0)
 				std::cout << this->labels_in_block[i];
 			else{

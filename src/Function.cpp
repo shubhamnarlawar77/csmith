@@ -878,7 +878,8 @@ GenerateFunctions(void)
 		}
 	}
 	if (CGOptions::stmt_expr()){
-		for (int i =0 ;i < FuncList.size() ; i++){
+		size_t i;
+		for (i =0 ;i < FuncList.size() ; i++){
 			if(FuncList[i]->func_stmt_expr_true){
 				Block *zero_blk = FuncList[i]->blocks[0];
 				zero_blk -> func_start_stmt_expr = true;
@@ -996,14 +997,14 @@ store_labels_in_block(const Function *f){
        local_cfg_edges_goto.clear();
 	std::vector <string> goto_src_vector;
 	goto_src_vector.clear();
-       for (int i =0 ;i < fm->cfg_edges.size(); i++){
+       for (size_t i =0 ;i < fm->cfg_edges.size(); i++){
                if(fm->cfg_edges[i]->src->eType == eGoto){
                         local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
 			goto_src_vector.push_back (((StatementGoto*)(fm->cfg_edges[i]->src))->label);
                }
        }
 	bool dummy= false;
-       for (int i=0;i<local_cfg_edges_goto.size();i++){
+       for (size_t i=0;i<local_cfg_edges_goto.size();i++){
 		dummy = false;
                StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
                Block *blk = local_cfg_edges_goto[i]->dest->parent;
@@ -1035,7 +1036,8 @@ store_labels_in_block(const Function *f){
        	               blk->labels_in_block.push_back(sg->label);
                }
        	}
-       for (int i=0; i< f->blocks.size() ; i++){
+	size_t i;
+       for (i=0; i< f->blocks.size() ; i++){
                Block* b = f->blocks[i];
                if(b!=f->blocks[0] && b->contains_label){
                        while(b!=f->blocks[0]){
@@ -1068,7 +1070,8 @@ Function::find_global_to_insert_in_typeof(const Variable *para){       //now set
 void typeof_on_return_values(){
 
        vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
-       for (int i =0; i< FuncList.size(); i++){
+	size_t i;
+       for (i =0; i< FuncList.size(); i++){
                int global_count = globals.size();
                int flag=0;
                if(FuncList[i]->rv->is_typeof){
@@ -1087,7 +1090,8 @@ void typeof_on_return_values(){
 
                                                ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
                                                sizes = av->get_sizes();
-                                               for (int i=0; i< sizes.size() ; i++){
+						size_t i;
+                                               for (i=0; i< sizes.size() ; i++){
                                                        ss << "[" << sizes[i] << "]";
                                                }
                                                FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
@@ -1124,15 +1128,12 @@ void typeof_on_func_parameters(){
                                while(cnt_para_with_typeof > 0){
                                        int indx_para = rnd_upto(FuncList[idx_func]->param.size());
                                        Variable *para = FuncList[idx_func]->param[indx_para];
-                                       //cout << "\n para " << para->name;
                                        Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(para);
                                        if(glob_replace_var !=  NULL){
                                                flag =1;
                                                para->is_typeof_used_param  = true;
-                                
                                                if(!glob_replace_var->is_array_field()){
                                                        para->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
-                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
                                                }
                                                else{
                                                        ostringstream ss;
@@ -1143,10 +1144,10 @@ void typeof_on_func_parameters(){
 
                                                        ArrayVariable *av = (ArrayVariable*)glob_replace_var;
                                                        sizes = av->get_sizes();
-                                                       for (int i=0; i< sizes.size() ; i++){
+							size_t i;
+                                                       for (i=0; i< sizes.size() ; i++){
                                                                ss << "[" << sizes[i] << "]";
                                                        }
-                                                       //cout << "replace var" << ss.str();
                                                        para->qfer.set_typeof_replace_var(ss.str());
                                                }
                                        }
@@ -1164,10 +1165,8 @@ void typeof_on_local_variables(){
 
        if(globals.size() > 0 && FuncList.size() > 1){
                int cnt_func_local_typeof = rnd_upto(FuncList.size());
-//             cout << "\nnarla " << cnt_func_local_typeof;
                for (int i = 0; i< cnt_func_local_typeof ; i++){
                        int idx_func = rnd_upto(FuncList.size());
-//cout << "\nboo" << FuncList[idx_func]->name;
                        if(FuncList[idx_func]->blocks.size() != 0 ){//obviously this won't happen as always atleast 1 block
                                FuncList[idx_func]->is_local_typeof = true;//IMP
                                int cnt_blocks_with_typeof = rnd_upto(FuncList[idx_func]->blocks.size());
@@ -1185,15 +1184,12 @@ void typeof_on_local_variables(){
                                        for(int i=0; i<temp_local_var; i++){
                                        int random_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
                                        Variable *local = FuncList[idx_func]->blocks[indx_block]->local_vars[random_local_var];//
-                                       //cout << "\n para " << para->name;
                                        Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(local);
                                        if(glob_replace_var !=  NULL){
                                                flag =1;
                                                local->is_typeof_used_local  = true;
-
                                                if(!glob_replace_var->is_array_field()){
                                                        local->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
-                                                       //cout << " replace var " << glob_replace_var->get_actual_name();
                                                }
                                                else{
                                                        ostringstream ss;
@@ -1204,10 +1200,10 @@ void typeof_on_local_variables(){
 
                                                        ArrayVariable *av = (ArrayVariable*)glob_replace_var;
                                                        sizes = av->get_sizes();
-                                                       for (int i=0; i< sizes.size() ; i++){
+							size_t i;
+                                                       for (i=0; i< sizes.size() ; i++){
                                                                ss << "[" << sizes[i] << "]";
                                                        }
-                                                       //cout << "replace var" << ss.str();
                                                        local->qfer.set_typeof_replace_var(ss.str());
                                                }
                                        }

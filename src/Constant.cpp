@@ -99,7 +99,8 @@ Constant::clone() const
 //--------------------------------------------------------------
 string HexToBinary(string q ){
 	std::ostringstream oss;
-	for (int i=0;i< q.size() ; i++){//no ox prefix added yet
+	size_t i;
+	for (i=0;i< q.size() ; i++){//no ox prefix added yet
 	if (q[i] == '0')
 		oss << "0000";
 	else if (q[i] == '1')
