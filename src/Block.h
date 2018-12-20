@@ -80,6 +80,10 @@ public:
     Block* random_parent_block(void);
 
 	int block_size() { return block_size_; }
+	std::vector<string> addr_labels;
+	std::vector<string> try_only_labels;
+	void print_label_addr_array(std::ostream&, int) const;
+
 	// These are currently accessed directly.
 	std::vector<Statement *> stms;
 	std::vector<Statement *> deleted_stms;
