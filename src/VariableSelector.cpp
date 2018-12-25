@@ -570,16 +570,7 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 		GlobalNonvolatilesList.push_back(var);
 	}
 	var_created = true;
-	if(var->get_actual_name() == "g_101"){
-		cout << " \nCVQUALIFIERS ";
-		if (var_qfer.is_volatile())
-			cout << " volatile ";
-		else if (var_qfer.is_const())
-			cout << " const ";
-		else if (var_qfer.is_qualifier_complex() == true)
-			cout << "complex ";
-		cout <<"\t type "<< t->simple_type;
-	}
+	
 	int prob = 0;
 	if(CGOptions::variable_attribute_unused()){
 		prob = rnd_flipcoin(VariableAttriUnusedProb);
