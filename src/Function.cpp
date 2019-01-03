@@ -1090,9 +1090,9 @@ void typeof_on_return_values(){
 
                                                ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
                                                sizes = av->get_sizes();
-						size_t i;
-                                               for (i=0; i< sizes.size() ; i++){
-                                                       ss << "[" << sizes[i] << "]";
+						size_t j;
+                                               for (j=0; j< sizes.size() ; j++){
+                                                       ss << "[" << sizes[j] << "]";
                                                }
                                                FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
                                        }
