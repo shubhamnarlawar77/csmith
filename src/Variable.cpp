@@ -78,12 +78,12 @@ unsigned long Variable::ctrl_vars_count;
 
 const char Variable::sink_var_name[] = "csmith_sink_";
 
-void Variable::output_aligned(){
+void Variable::output_aligned(std::ostream &out){
 
 		int probobility__BIGGEST_ALIGNMENT__ = 38;
 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
 		if (use__BIGGEST_ALIGNMENT__)
-			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+			out << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
 		else{
 			int value = 0;
 			int power = rnd_upto(8);
@@ -112,7 +112,7 @@ void Variable::output_aligned(){
 					value = 128;
 					break;
 			}
-			cout << " __attribute__((aligned(" <<value << ")))";
+			out << " __attribute__((aligned(" <<value << ")))";
 		}
 
 }
@@ -730,7 +730,7 @@ Variable::OutputDef(std::ostream &out, int indent) const
 	out << get_actual_name();
 	if (var_attri_aligned){
                 Variable *var;
-                var->output_aligned();
+                var->output_aligned(out);
         }
         static int i;
         if (var_attri_section){

@@ -73,12 +73,12 @@ static vector<Type *> derived_types;
 
 //////////////////////////////////////////////////////////////////////
 
-void Type::output_aligned(){
+void Type::output_aligned(std::ostream &out){
 
 		int probobility__BIGGEST_ALIGNMENT__ = 38;
 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
 		if (use__BIGGEST_ALIGNMENT__)
-			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+			out << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
 		else{
 			int value = 0;
 			int power = rnd_upto(8);
@@ -107,7 +107,7 @@ void Type::output_aligned(){
 					value = 128;
 					break;
 			}
-			cout << " __attribute__((aligned(" <<value << ")))";
+			out << " __attribute__((aligned(" <<value << ")))";
 		}
 }
 
@@ -2001,7 +2001,7 @@ void OutputStructUnion(Type* type, std::ostream &out)
 				out << " f" << j++ ;
 			      	if (type->var_attri_aligned_for_struct){
                 			Type *type;
-                			type->output_aligned();
+                			type->output_aligned(out);
         			}
                                 out << ";";
 			}
@@ -2020,7 +2020,7 @@ void OutputStructUnion(Type* type, std::ostream &out)
         out << "}";
        if (type->var_attri_aligned_for_struct){
                Type *type;
-               type->output_aligned();
+               type->output_aligned(out);
        }
 
 	//@end of struct defination

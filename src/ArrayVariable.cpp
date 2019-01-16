@@ -65,12 +65,12 @@ using namespace std;
  * return 0 for constants, 2 for function calls
  */
 
-void ArrayVariable::output_aligned(){
+void ArrayVariable::output_aligned(std::ostream &out){
 
 		int probobility__BIGGEST_ALIGNMENT__ = 38;
 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
 		if (use__BIGGEST_ALIGNMENT__)
-			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+			out << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
 		else{
 			int value = 0;
 			int power = rnd_upto(8);
@@ -99,7 +99,7 @@ void ArrayVariable::output_aligned(){
 					value = 128;
 					break;
 			}
-			cout << " __attribute__((aligned(" <<value << ")))";
+			out << " __attribute__((aligned(" <<value << ")))";
 		}
 }
 
@@ -598,7 +598,7 @@ ArrayVariable::OutputDef(std::ostream &out, int indent) const
 			}
 			if (var_attri_aligned){
                                 ArrayVariable *av;
-                                av->output_aligned();
+                                av->output_aligned(out);
                         }
 			if (array_var_attri_unused)
 				out << " __attribute__((unused))";
