@@ -357,7 +357,7 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 			indent++;
 			output_tab(out , indent);
 			out << "__label__ ";
-			outputlocal_labels();
+			outputlocal_labels(out);
 			out << ";";
 			outputln(out);
 			indent--;
@@ -899,14 +899,14 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
 	cout << "};\n";
 }
 void
-Block::outputlocal_labels () const{
+Block::outputlocal_labels (std::ostream &out) const{
 		size_t i;
 		for (i =0 ;i < this->labels_in_block.size(); i++){
 			if (i == 0)
-				std::cout << this->labels_in_block[i];
+				out << this->labels_in_block[i];
 			else{
-				std::cout << " , ";
-				std::cout << this->labels_in_block[i];
+				out << " , ";
+				out << this->labels_in_block[i];
 			}
 		}
 }

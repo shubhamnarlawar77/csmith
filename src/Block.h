@@ -127,7 +127,7 @@ public:
 	std::vector<const Statement*> break_stms;
         bool contains_label = false;
         std::vector<string> labels_in_block;
-        void outputlocal_labels () const;
+        void outputlocal_labels (std::ostream &out) const;
 
         bool func_start_stmt_expr = false;
 
