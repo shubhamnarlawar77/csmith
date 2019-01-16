@@ -341,7 +341,7 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	if (this->contains_tm_relaxed == 1){
 		outputln(out);
 		output_tab(out, indent);
-		cout << " __transaction_relaxed {";
+		out << " __transaction_relaxed {";
 		outputln(out);
 	}
 
@@ -376,7 +376,7 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 
 	if (this->contains_tm_relaxed == 1){
 		output_tab(out, indent);
-		cout << " }";
+		out << " }";
 		outputln(out);
 	}
 
