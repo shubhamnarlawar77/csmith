@@ -892,8 +892,8 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
 	out << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
 	out << "\nvoid *target[] = { ";
 	for(unsigned int i=0; i < addr_labels.size();i++){
-		i!=0 ? cout << ", " : cout << ""; 
-		cout << addr_labels[i];
+		i!=0 ? out << ", " : out << ""; 
+		out << addr_labels[i];
 	}
 
 	out << "};\n";
