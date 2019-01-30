@@ -889,14 +889,14 @@ void
 Block::print_label_addr_array(std::ostream &out , int indent) const{
 	ostringstream ss;
 	output_tab (out,indent);
-	cout << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
-	cout << "\nvoid *target[] = { ";
+	out << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
+	out << "\nvoid *target[] = { ";
 	for(unsigned int i=0; i < addr_labels.size();i++){
 		i!=0 ? cout << ", " : cout << ""; 
 		cout << addr_labels[i];
 	}
 
-	cout << "};\n";
+	out << "};\n";
 }
 void
 Block::outputlocal_labels (std::ostream &out) const{
