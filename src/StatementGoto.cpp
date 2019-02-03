@@ -218,6 +218,7 @@ StatementGoto::StatementGoto(Block* b, const Expression &test, const Statement* 
 	  dest(dest),
 	  init_skipped_vars(vars)
 {
+	other_name_for_label = "";
 	if (stm_labels.find(dest) != stm_labels.end()){
 		label = stm_labels[dest];
 	}
@@ -238,6 +239,7 @@ StatementGoto::StatementGoto(const StatementGoto &sg)
 	  init_skipped_vars(sg.init_skipped_vars)
 {
 	// Nothing else to do.
+	other_name_for_label = "";
 }
 
 /*
@@ -262,7 +264,15 @@ StatementGoto::Output(std::ostream &out, FactMgr* /*fm*/, int indent) const
 	output_tab(out, indent+1);
 
 //**changehere**//
-	if(CGOptions::computed_goto())
+	if( CGOptions::computed_goto() && CGOptions::local_labels() ){
+                if(other_name_for_label == ""){
+                         out << "goto " << label << ";";
+                }
+                else{
+                        out << "goto " << other_name_for_label << ";";
+                }
+        }
+        else if(CGOptions::computed_goto())
 		out << "goto " << other_name_for_label << ";";
 	else
 		out << "goto " << label << ";";

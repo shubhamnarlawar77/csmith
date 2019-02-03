@@ -202,6 +202,9 @@ Block::make_random(CGContext &cg_context, bool looping)
 	// if the last statement is not?
 	Error::set_error(SUCCESS);
 
+	//finding the labels inside blocks in function and storing them in labels_in_block
+	store_labels_in_block(curr_func);
+
 	//*changehere*//
 	if(CGOptions::computed_goto()){
 		if(curr_func->blocks[0]->stm_id==b->stm_id){
@@ -212,8 +215,12 @@ Block::make_random(CGContext &cg_context, bool looping)
 			for (std::vector<string>::iterator itr=labels.begin();itr!=labels.end();itr++) {
 				ss.clear();
 				ss += "&&";
-				ss += *itr;
-				curr_func->blocks[0]->addr_labels.push_back(ss);//only adds in the main array related to function.
+				bool check_local = b->is_local_label_present(cg_context, *itr);
+                                if(!check_local){
+                                        ss += *itr;
+                                        curr_func->blocks[0]->addr_labels.push_back(ss);
+                                }
+
 			}
 			//__________________________________________________________
 			for (size_t i=0; i<fm->cfg_edges.size();i++) {
@@ -221,7 +228,14 @@ Block::make_random(CGContext &cg_context, bool looping)
 				if(e->src->eType == eGoto) {
 					const StatementGoto* sg = dynamic_cast<const StatementGoto* >(e->src);
 					assert(sg);
-					sg->change_label(curr_func->blocks[0]->addr_labels);
+					std::vector<string>::iterator itr;
+                                        string ss = "";
+                                        ss.clear();
+                                        ss+="&&";
+                                        ss+=sg->label;
+                                        itr = find(curr_func->blocks[0]->addr_labels.begin(),curr_func->blocks[0]->addr_labels.end(),ss);
+                                        if( !(itr == curr_func->blocks[0]->addr_labels.end()) )
+                                                sg->change_label(curr_func->blocks[0]->addr_labels);
 				}
 			}
 
@@ -323,6 +337,10 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 {
 	output_tab(out, indent);
 	out << "{";
+//blockid
+	std::ostringstream ss;
+	ss << "block id: " << stm_id;
+	output_comment_line(out, ss.str());
 
 	if(CGOptions::stmt_expr()){
 		outputln(out);
@@ -332,11 +350,6 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 			out << "({";
 		}
 	}
-	std::ostringstream ss;
-	ss << "block id: " << stm_id;
-	output_comment_line(out, ss.str());
-
-//*changehere*//
 
 	if (this->contains_tm_relaxed == 1){
 		outputln(out);
@@ -345,23 +358,24 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 		outputln(out);
 	}
 
+	if(CGOptions::local_labels()){
+                if( this->contains_label && !(this->labels_in_block.empty()) ){
+                        indent++;
+                        output_tab(out , indent);
+                        out << "__label__ ";
+                        outputlocal_labels(out);
+                        out << ";";
+                        outputln(out);
+                        indent--;
+                }
+        }
+
 	if(CGOptions::computed_goto()){
 		if(!this->addr_labels.empty())
 	      		this->print_label_addr_array(out,indent);
 	}
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH++;" << endl;
-	}
-	if(CGOptions::local_labels()){
-		if( this->contains_label && !(this->labels_in_block.empty()) ){
-			indent++;
-			output_tab(out , indent);
-			out << "__label__ ";
-			outputlocal_labels(out);
-			out << ";";
-			outputln(out);
-			indent--;
-		}
 	}
 	indent++;
 	if (CGOptions::math_notmp())
@@ -897,6 +911,21 @@ Block::print_label_addr_array(std::ostream &out , int indent) const{
 	}
 
 	out << "};\n";
+}
+
+bool Block::is_local_label_present(CGContext &cg_context, string itr) const{
+        bool is_local_label_present = 0;
+        Function *curr_func = cg_context.get_current_func();
+
+        for (size_t j=0; j <curr_func->blocks.size(); j++) {
+                        const Block* blk = func->blocks[j];
+                for (size_t i =0 ;i < blk->labels_in_block.size(); i++){
+                                if( itr == blk->labels_in_block[i]){
+                                        is_local_label_present = 1;
+                                }
+                }
+        }
+        return is_local_label_present;
 }
 void
 Block::outputlocal_labels (std::ostream &out) const{

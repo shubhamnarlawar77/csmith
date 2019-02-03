@@ -518,8 +518,6 @@ Function::make_first(void)
 		f->func_stmt_expr_true = true;
 	else
 		f->func_stmt_expr_true = false;
-//finding the labels inside blocks in function and storing them in labels_in_block
-	store_labels_in_block(f);
 	return f;
 }
 
@@ -992,6 +990,8 @@ Function::~Function()
 
 void
 store_labels_in_block(const Function *f){
+	for(size_t i=0; i<f->blocks.size(); i++)
+		f->blocks[i]->labels_in_block.clear();
        FactMgr* fm= get_fact_mgr_for_func(f);
        vector<const CFGEdge*> local_cfg_edges_goto;
        local_cfg_edges_goto.clear();
