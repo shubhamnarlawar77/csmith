@@ -8,20 +8,10 @@ for information about original Csmith:
 
                     University of Utah School of Computing
                             http://www.cs.utah.edu/
-                                       
+
+GUIDANCE :Andi Kleen (ak@linux.intel.com)
+
 for information related to Csmith with GCC extensions:
-  joshisameeran17@gmail.com
-  shubhamnarlawar123@gmail.com
-  
-Extended Csmith can be built using the same way as of csmith.
-you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
-  ./csmith --help
-and generate a C program for extension using the command line option
-  
-The folder named testing_scripts contains script for
-  1.compiler crash 
-  2.output checksum checking 
-  for both GCC and Clang
   
 Most Csmith info can be found here:
 
@@ -29,3 +19,36 @@ Most Csmith info can be found here:
   
 Information about gcc C language extensions can be found here:
   https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/C-Extensions.html#C-Extensions
+
+email:
+     gsocshubham@gmail.com (SHUBHAM NARLAWAR)
+     gsocsameeran@gmail.com (SAMEERAN JOSHI)
+  
+  
+  **IMPLEMENTED EXTENSIONS AND COMMAND LINES **
+  
+  **BUGS FOUND SO FAR**
+  [links]
+  [links]
+  **COVERAGE REPORTS**
+  [without gcc extn ]
+  line
+  function
+  branch
+  [with gcc extn]
+  line
+  function
+  branch
+  
+  %gain
+  line 
+  function
+  branch
+  
+  **NUMBER OF TEST CASES TAKEN SO FAR**
+  []
+  **HOW TO BUILD**
+Extended Csmith can be built using the same way as of csmith.
+you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
+  ./csmith --help
+and generate a C program for extension using the command line option
