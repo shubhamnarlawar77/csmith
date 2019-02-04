@@ -28,25 +28,27 @@ email:
   **IMPLEMENTED EXTENSIONS AND COMMAND LINES **
   
   **BUGS FOUND SO FAR**
-  [links]
-  [links]
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87118
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89135
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89153
+  
   **COVERAGE REPORTS**
   [without gcc extn ]
-  line
-  function
-  branch
+  line - 35.2
+  function - 43.2
+  branch - 25.7
   [with gcc extn]
-  line
-  function
-  branch
+  line - 35.7
+  function - 43.9
+  branch - 26.1
   
   %gain
-  line 
-  function
-  branch
+  line - 0.5%
+  function - 0.7%
+  branch - 0.4%
   
   **NUMBER OF TEST CASES TAKEN SO FAR**
-  []
+  20,000,00
   **HOW TO BUILD**
 Extended Csmith can be built using the same way as of csmith.
 you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
