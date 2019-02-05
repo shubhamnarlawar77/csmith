@@ -37,6 +37,7 @@ email:
   line - 35.2
   function - 43.2
   branch - 25.7
+
   [with gcc extn]
   line - 35.7
   function - 43.9
@@ -51,6 +52,16 @@ email:
   20,000,00
   **HOW TO BUILD**
 Extended Csmith can be built using the same way as of csmith.
+
+mkdir extended_csmith
+cd extended_csmith
+
+git clone https://github.com/Sameeranjoshi/csmith.git
+git checkout -b gcc-extensions
+./configure
+make -j{number of processors on your machine} (make -j4)
+
+
 you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
   ./csmith --help
 and generate a C program for extension using the command line option
