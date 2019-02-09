@@ -62,6 +62,8 @@ Information about gcc C language extensions can be found here:
   --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default).
 
   ----------------------------------------------------------------------------------------------------------------------
+  
+  Note - Above extensions can be used using different combinations.
 
   
   **-----------------------------------------BUGS FOUND SO FAR----------------------------------------------------**
