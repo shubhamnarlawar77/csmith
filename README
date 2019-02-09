@@ -1,67 +1,112 @@
 -*- mode: Text -*-
+                  EXTENDING CSMITH FOR GCC C LANGUAGE EXTENSIONS.
+          
 
-                  extending Csmith for GCC C language extensions--- a random generator of C programs with gcc C language extensions
-
-for information about original Csmith:
+For information about original Csmith:
               Xuejun Yang, Yang Chen, Eric Eide, and John Regehr
                   {jxyang,chenyang,eeide,regehr}@cs.utah.edu
 
                     University of Utah School of Computing
                             http://www.cs.utah.edu/
 
-GUIDANCE :Andi Kleen (ak@linux.intel.com)
-
-for information related to Csmith with GCC extensions:
+EXTENDED CSMITH IS IMPLEMENTED UNDER GUIDANCE OF : Andi Kleen (ak@linux.intel.com)
   
 Most Csmith info can be found here:
-
   http://embed.cs.utah.edu/csmith/
+  
+Extended Csmith project github link - 
+  https://github.com/Sameeranjoshi/csmith/tree/gcc-extensions
   
 Information about gcc C language extensions can be found here:
   https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/C-Extensions.html#C-Extensions
 
-email:
+--------------------------------------------CONTACT EMAILS----------------------------------------------------------
      gsocshubham@gmail.com (SHUBHAM NARLAWAR)
      gsocsameeran@gmail.com (SAMEERAN JOSHI)
   
   
-  **IMPLEMENTED EXTENSIONS AND COMMAND LINES **
+  ----------------------------------**IMPLEMENTED EXTENSIONS AND COMMAND LINES **----------------------------------
+
+  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default).
+
+  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by      default).
+
+  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)
+
+  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default).
+
+  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default).
+
+  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default).
+
+  --double | --no-double: enable | disable generate double as data type extension (disabled by default).
+
+  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default).
+
+  --binary | --no-binary: enable | disable generate binary constant (disabled by default).
+
+  --union-cast | --no-union-cast: enable | disable casting of union variable (disabled by default).
+
+  //variable attributes 
+
+  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default).
+
+  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default).
+
+  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default).
+
+  --variable-attribute-section | --no-variable-attribute-section: enable | disable variable attribute section extension. (disable by default)
+
+  //label attributes 
+
+  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default).
+
+  ----------------------------------------------------------------------------------------------------------------------
+
   
-  **BUGS FOUND SO FAR**
+  **-----------------------------------------BUGS FOUND SO FAR----------------------------------------------------**
   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87118
   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89135
   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89153
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89223
   
-  **COVERAGE REPORTS**
-  [without gcc extn ]
+  ------------------------------------------**GCC CODE COVERAGE REPORTS-------------------------------------------**
+  
+  [WITHOUT GCC EXTENSIONS ]
   line - 35.2
   function - 43.2
   branch - 25.7
 
-  [with gcc extn]
+  [WITH GCC EXTENSIONS IMPLEMENTED IN CSMITH]
   line - 35.7
   function - 43.9
   branch - 26.1
   
-  %gain
+  [% GAIN]
   line - 0.5%
   function - 0.7%
   branch - 0.4%
   
-  **NUMBER OF TEST CASES TAKEN SO FAR**
-  20,000,00
-  **HOW TO BUILD**
+  ------------------------------------**NUMBER OF TEST CASES TAKEN SO FAR--------------------------------------------**
+  Total test cases taken = 22,400,00
+  
+  ------------------------------------**CONFIGURING AND BUILDING CSMITH---------------------------------------------**
 Extended Csmith can be built using the same way as of csmith.
 
-mkdir extended_csmith
-cd extended_csmith
+$ mkdir extended_csmith
+$ cd extended_csmith
 
-git clone https://github.com/Sameeranjoshi/csmith.git
-git checkout -b gcc-extensions
-./configure
-make -j{number of processors on your machine} (make -j4)
+$ git clone https://github.com/Sameeranjoshi/csmith.git
+$ cd csmith
+$ git checkout -b gcc-extensions
+
+$ cmake .
+$ make -j{number of processors on your machine} 
+e.g. make -j4 if you have 4 processors on your machine
 
 
-you can find more information about the implemented extensions (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/) using:
-  ./csmith --help
-and generate a C program for extension using the command line option
+You can find more information about the implemented extensions in Csmith using below commands -  (after configuring and building Csmith from http://embed.cs.utah.edu/csmith/)
+
+  $ cd extended_csmith/csmith/src/
+  $ ./csmith --help
+  
