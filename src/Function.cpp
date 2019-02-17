@@ -518,8 +518,6 @@ Function::make_first(void)
 		f->func_stmt_expr_true = true;
 	else
 		f->func_stmt_expr_true = false;
-//finding the labels inside blocks in function and storing them in labels_in_block
-	store_labels_in_block(f);
 	return f;
 }
 
@@ -992,6 +990,8 @@ Function::~Function()
 
 void
 store_labels_in_block(const Function *f){
+	for(size_t i=0; i<f->blocks.size(); i++)
+		f->blocks[i]->labels_in_block.clear();
        FactMgr* fm= get_fact_mgr_for_func(f);
        vector<const CFGEdge*> local_cfg_edges_goto;
        local_cfg_edges_goto.clear();
@@ -1090,9 +1090,9 @@ void typeof_on_return_values(){
 
                                                ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
                                                sizes = av->get_sizes();
-						size_t i;
-                                               for (i=0; i< sizes.size() ; i++){
-                                                       ss << "[" << sizes[i] << "]";
+						size_t j;
+                                               for (j=0; j< sizes.size() ; j++){
+                                                       ss << "[" << sizes[j] << "]";
                                                }
                                                FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
                                        }

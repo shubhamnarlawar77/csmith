@@ -275,7 +275,7 @@ public:
 	static Type* find_type(const Type* t);
 	bool var_attri_packed_for_struct;
 	bool var_attri_aligned_for_struct;
-        void output_aligned();
+        void output_aligned(std::ostream &out);
 // private:
 	eTypeDesc eType;
 	const Type *ptr_type;

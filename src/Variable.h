@@ -137,7 +137,7 @@ public:
 	virtual void OutputLowerBound(std::ostream &) const;
 	virtual void OutputUpperBound(std::ostream &) const;
 
-	void output_aligned();
+	void output_aligned(std::ostream &out);
 
 	static size_t GetMaxArrayDimension(const vector<Variable*>& vars);
 

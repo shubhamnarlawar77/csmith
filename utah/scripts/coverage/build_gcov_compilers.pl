@@ -19,38 +19,38 @@ my $COV_BASE_HOME = $ENV{"COV_BASE_HOME"};
 
 # for my convenience
 if (!defined($COV_BASE_HOME)) {
-    $COV_BASE_HOME = "/uusoc/exports/scratch/chenyang/tmp/branch_test";
+    $COV_BASE_HOME = "/home/extended_csmith/coverage";
 }
 
 my $COMPILER_SOURCES_HOME = "$COV_BASE_HOME/sources";
 
 my @compilers = (
     "gcc",
-    "llvm",
-    "llvm-regular",
-    "llvm-gcc",
+#    "llvm",
+#    "llvm-regular",
+#    "llvm-gcc",
 );
 
 my %paths = (
     "gcc" => ["$COMPILER_SOURCES_HOME", "current-gcc"],
-    "llvm" => ["$COMPILER_SOURCES_HOME", "llvm"],
-    "llvm-regular" => ["$COMPILER_SOURCES_HOME", "llvm-regular"],
-    "llvm-gcc" => ["$COMPILER_SOURCES_HOME", "llvm-gcc-4.2"],
-    "clang" => ["$COMPILER_SOURCES_HOME/llvm/tools", "clang"],
-    "llvm-testsuite" => ["$COMPILER_SOURCES_HOME/llvm/projects", "test-suite"],
+#    "llvm" => ["$COMPILER_SOURCES_HOME", "llvm"],
+#    "llvm-regular" => ["$COMPILER_SOURCES_HOME", "llvm-regular"],
+#    "llvm-gcc" => ["$COMPILER_SOURCES_HOME", "llvm-gcc-4.2"],
+#    "clang" => ["$COMPILER_SOURCES_HOME/llvm/tools", "clang"],
+#    "llvm-testsuite" => ["$COMPILER_SOURCES_HOME/llvm/projects", "test-suite"],
 );
 
 my %svn_dependencies = (
-    "llvm" => "clang",
+#    "llvm" => "clang",
 );
 
 my %svn_repos = (
     "gcc" => "svn://gcc.gnu.org/svn/gcc/trunk",
-    "llvm" => "http://llvm.org/svn/llvm-project/llvm/trunk",
-    "llvm-regular" => "http://llvm.org/svn/llvm-project/llvm/trunk",
-    "llvm-gcc" => "http://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk",
-    "clang" => "http://llvm.org/svn/llvm-project/cfe/trunk",
-    "llvm-testsuite" => "http://llvm.org/svn/llvm-project/test-suite/trunk",
+#    "llvm" => "http://llvm.org/svn/llvm-project/llvm/trunk",
+#    "llvm-regular" => "http://llvm.org/svn/llvm-project/llvm/trunk",
+#    "llvm-gcc" => "http://llvm.org/svn/llvm-project/llvm-gcc-4.2/trunk",
+#    "clang" => "http://llvm.org/svn/llvm-project/cfe/trunk",
+#    "llvm-testsuite" => "http://llvm.org/svn/llvm-project/test-suite/trunk",
 );
 
 my %dependencies = (
@@ -58,28 +58,28 @@ my %dependencies = (
 );
 
 my %programs = (
-    "gmp" => "ftp://ftp.gmplib.org/pub/gmp-5.0.1/gmp-5.0.1.tar.bz2",
-    "mpfr" => "http://www.mpfr.org/mpfr-current/mpfr-3.0.0.tar.gz",
-    "mpc" => "http://www.multiprecision.org/mpc/download/mpc-0.8.2.tar.gz",
-    "libelf" => "http://www.mr511.de/software/libelf-0.8.13.tar.gz",
+    "gmp" => "ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-6.1.0.tar.bz2",
+    "mpfr" => "ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-3.1.4.tar.bz2",
+    "mpc" => "ftp://gcc.gnu.org/pub/gcc/infrastructure/mpc-1.0.3.tar.gz",
+    "libelf" => "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
 );
-
+#ftp://gcc.gnu.org/pub/gcc/infrastructure/mpfr-3.1.4.tar.bz2
 my $enable_optimized = "";
 
 my %config_options = (
     "gcc" => "--prefix=$COV_BASE_HOME --program-prefix=current- --enable-languages=c,c++ --enable-lto --enable-coverage --disable-bootstrap",
     "gcc-opt" => "--prefix=$COV_BASE_HOME --program-prefix=current- --enable-languages=c,c++ --enable-lto --enable-coverage=opt --disable-bootstrap",
-    "llvm" => "--prefix=$COV_BASE_HOME",
-    "llvm-opt" => "--prefix=$COV_BASE_HOME --enable-optimized",
-    "llvm-regular" => "--prefix=$COV_BASE_HOME --enable-optimized",
-    "llvm-gcc" => "--prefix=$COV_BASE_HOME --enable-languages=c,c++ --program-prefix=llvm- --enable-checking --enable-llvm=$COMPILER_SOURCES_HOME/llvm-regular/build --disable-bootstrap --disable-multilib",
+#    "llvm" => "--prefix=$COV_BASE_HOME",
+#    "llvm-opt" => "--prefix=$COV_BASE_HOME --enable-optimized",
+#    "llvm-regular" => "--prefix=$COV_BASE_HOME --enable-optimized",
+#    "llvm-gcc" => "--prefix=$COV_BASE_HOME --enable-languages=c,c++ --program-prefix=llvm- --enable-checking --enable-llvm=$COMPILER_SOURCES_HOME/llvm-regular/build --disable-bootstrap --disable-multilib",
 );
 
 my %make_options = (
     "gcc" => "",
-    "llvm" => "ENABLE_COVERAGE=1",
-    "llvm-regular" => "",
-    "llvm-gcc" => "",
+#    "llvm" => "ENABLE_COVERAGE=1",
+#    "llvm-regular" => "",
+#    "llvm-gcc" => "",
 );
 
 sub runit ($) {
