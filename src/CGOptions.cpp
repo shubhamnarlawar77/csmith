@@ -281,7 +281,7 @@ CGOptions::set_default_settings(void)
 	longlong(true);
 	int8(true);
 	uint8(true);
-	variable_attribute_packed(true);
+	variable_attribute_packed(false);
 	label_attribute_hot_cold(false);
 	enable_float(false);
 	strict_float(false);
