@@ -395,6 +395,7 @@ Function::Function(const string &name, const Type *return_type)
 	  build_state(UNBUILT)
 {
 	FuncList.push_back(this);			// Add to global list of functions.
+	func_attr_inline = false;
 }
 
 Function::Function(const string &name, const Type *return_type, bool builtin)
@@ -409,6 +410,7 @@ Function::Function(const string &name, const Type *return_type, bool builtin)
 	  build_state(UNBUILT)
 {
 	FuncList.push_back(this);			// Add to global list of functions.
+	func_attr_inline = false;
 }
 
 Function *
@@ -431,6 +433,9 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
 	FMList.push_back(new FactMgr(f));
 	if (CGOptions::inline_function() && rnd_flipcoin(InlineFunctionProb))
 		f->is_inlined = true;
+
+	if(CGOptions::func_attr_inline() && rnd_flipcoin(InlineFunctionProb))
+		f->func_attr_inline = true;
 	return f;
 }
 
@@ -481,6 +486,9 @@ Function::make_first(void)
 
 	// collect info about global dangling pointers
 	fm->find_dangling_global_ptrs(f);
+
+	if(CGOptions::func_attr_inline() && rnd_flipcoin(InlineFunctionProb))
+                f->func_attr_inline = true;
 	return f;
 }
 
@@ -552,6 +560,8 @@ Function::OutputForwardDecl(std::ostream &out)
 	if (is_builtin)
 		return;
 	OutputHeader(out);
+	if(func_attr_inline)
+		out << " __attribute__((always_inline))";
 	out << ";";
 	outputln(out);
 }
