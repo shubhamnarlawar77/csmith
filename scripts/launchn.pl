@@ -55,7 +55,7 @@ for (my $i=0; $i<$CPUS; $i++) {
     system "rm -rf $dir";
     system "mkdir $dir";
     chdir $dir;
-    system "nice -19 nohup ../compiler_test.pl 0  ../$CONFIG_FILE > output.txt 2>&1 &";
+    system "nice -19 nohup ../compiler_test.pl 1000 ../$CONFIG_FILE > output.txt 2>&1 &";
     print "start working in $dir\n";
     chdir "..";
 }
