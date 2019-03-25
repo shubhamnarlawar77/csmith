@@ -123,6 +123,9 @@ public:
 	int  visited_cnt;
 	Effect accum_eff_context;
 
+	//GCC C Extensions
+	bool func_attr_inline;
+
 private:
 	static int deleteFunction(Function* func);
 
