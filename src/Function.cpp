@@ -884,10 +884,7 @@ OutputFunctions(std::ostream &out)
 int
 Function::deleteFunction(Function* func)
 {
-	if (func) {
-		delete func;
-		func = 0;
-	}
+	delete func;
 	return 0;
 }
 
