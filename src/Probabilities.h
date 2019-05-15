@@ -149,6 +149,7 @@ enum ProbName {
 
 	//for function attributes
 	pFuncAttrInline,
+	pFuncAttrAligned,
 
 };
 
@@ -228,6 +229,9 @@ enum ProbName {
 
 #define FuncAttrInline \
 	Probabilities::get_prob(pFuncAttrInline)
+
+#define FuncAttrAligned \
+	Probabilities::get_prob(pFuncAttrAligned)
 
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \
