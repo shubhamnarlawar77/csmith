@@ -396,6 +396,7 @@ Function::Function(const string &name, const Type *return_type)
 {
 	FuncList.push_back(this);			// Add to global list of functions.
 	func_attr_inline = false;
+	func_attr_aligned = false;
 }
 
 Function::Function(const string &name, const Type *return_type, bool builtin)
@@ -411,6 +412,7 @@ Function::Function(const string &name, const Type *return_type, bool builtin)
 {
 	FuncList.push_back(this);			// Add to global list of functions.
 	func_attr_inline = false;
+	func_attr_aligned = false;
 }
 
 Function *
@@ -436,6 +438,9 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
 
 	if(CGOptions::func_attr_inline() && rnd_flipcoin(InlineFunctionProb))
 		f->func_attr_inline = true;
+
+	if(CGOptions::func_attr_aligned() && rnd_flipcoin(FuncAttrAligned))
+		f->func_attr_aligned = true;
 	return f;
 }
 
@@ -489,6 +494,9 @@ Function::make_first(void)
 
 	if(CGOptions::func_attr_inline() && rnd_flipcoin(InlineFunctionProb))
                 f->func_attr_inline = true;
+
+	if(CGOptions::func_attr_aligned() && rnd_flipcoin(FuncAttrAligned))
+		f->func_attr_aligned = true;
 	return f;
 }
 
@@ -562,6 +570,10 @@ Function::OutputForwardDecl(std::ostream &out)
 	OutputHeader(out);
 	if(func_attr_inline)
 		out << " __attribute__((always_inline))";
+	if(func_attr_aligned){
+		int power = rnd_upto(16);
+		out << " __attribute__((aligned(" << (1 << power) << ")))";
+	}
 	out << ";";
 	outputln(out);
 }
