@@ -125,6 +125,7 @@ public:
 
 	//GCC C Extensions
 	bool func_attr_inline;
+	void GenerateAttributes();
 
 private:
 	static int deleteFunction(Function* func);

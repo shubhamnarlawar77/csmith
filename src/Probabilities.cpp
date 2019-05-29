@@ -504,6 +504,9 @@ Probabilities::set_single_name_maps()
 
 	//for choosing function attribute inline
 	set_single_name("func_attr_inline", pFuncAttrInline);
+
+	//for choosing function attributes
+	set_single_name("func_attr_flag", pFuncAttrProb);
 }
 
 void
@@ -546,6 +549,7 @@ Probabilities::initialize_single_probs()
 
 	//GCC C Extensions
 	m[pFuncAttrInline] = 50;
+	m[pFuncAttrProb] = 30;
 
 	if (CGOptions::volatiles())
 		m[pRegularVolatileProb] = 50;

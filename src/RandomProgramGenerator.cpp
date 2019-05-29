@@ -211,6 +211,7 @@ static void print_help()
 	//--------------------------GCC C Extensions--------------------------
 	cout<< "------------------------------GCC C Extensions------------------------------" << endl << endl;
 	cout << " --func-attr-inline | --no-func-attr-inline: enable | disable generate function attribute inline (disabled by default)." << endl << endl;
+	cout << " --function-attributes | --no-func-attributes: enable | disable generate common function attributes (disabled by default)." << endl << endl;
 
 }
 
@@ -808,6 +809,16 @@ main(int argc, char **argv)
                         CGOptions::func_attr_inline(false);
                         continue;
                 }
+
+		if (strcmp (argv[i], "--function-attributes") == 0) {
+			CGOptions::func_attr_flag(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-function_attributes") == 0) {
+			CGOptions::func_attr_flag(false);
+			continue;
+		}
 
 		if (strcmp (argv[i], "--max-array-dim") ==0 ) {
 			unsigned long dim;

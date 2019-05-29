@@ -66,16 +66,35 @@
 #include "DepthSpec.h"
 #include "ExtensionMgr.h"
 #include "OutputMgr.h"
+#include "Attribute.h"
 
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+AttributeGenerator func_attr_generator;
 static vector<Function*> FuncList;		// List of all functions in the program
 static vector<FactMgr*>  FMList;        // list of fact managers for each function
 static long cur_func_idx;				// Index into FuncList that we are currently working on
 static bool param_first=true;			// Flag to track output of commas
 static int builtin_functions_cnt;
+
+void
+Function::GenerateAttributes()
+{
+	if(CGOptions::func_attr_flag()){
+		vector<string> common_func_attributes = {"artificial", "flatten", "no_reorder", "hot", "cold", "noipa", "used", "unused", \
+							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", \
+							"no_instrument_function", "no_sanitize_address", "no_sanitize_thread", \
+							"no_sanitize_undefined", "no_split_stack", "noinline", "noplt", "stack_protect"};
+		vector<string>::iterator itr;
+		for(itr = common_func_attributes.begin(); itr < common_func_attributes.end(); itr++)
+			func_attr_generator.attributes.push_back(new BooleanAttribute(*itr, FuncAttrProb));
+
+		func_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
+		func_attr_generator.attributes.push_back(new MultiValuedAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+	}
+}
 
 /*
  * find FactMgr for a function
@@ -489,6 +508,8 @@ Function::make_first(void)
 
 	if(CGOptions::func_attr_inline() && rnd_flipcoin(InlineFunctionProb))
                 f->func_attr_inline = true;
+
+	f->GenerateAttributes();
 	return f;
 }
 
@@ -562,6 +583,7 @@ Function::OutputForwardDecl(std::ostream &out)
 	OutputHeader(out);
 	if(func_attr_inline)
 		out << " __attribute__((always_inline))";
+	func_attr_generator.GenerateAllAttributes(out);
 	out << ";";
 	outputln(out);
 }
