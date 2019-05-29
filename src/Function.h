@@ -59,6 +59,31 @@ class CVQualifiers;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class FunctionAttribute
+{
+public:
+	string attribute;
+	int attribute_probability;
+	FunctionAttribute(string, int);
+	void OutputAttribute(std::ostream &, string);
+	virtual void OutputAttributes(std::ostream &) = 0;
+};
+
+class BooleanFunctionAttribute : public FunctionAttribute
+{
+public:
+	BooleanFunctionAttribute(string, int);
+	void OutputAttributes(std::ostream &);
+};
+
+class MultiValuedFunctionAttribute : public FunctionAttribute
+{
+public:
+	vector<string> attribute_values;
+	MultiValuedFunctionAttribute(string, int, vector<string>);
+	void OutputAttributes(std::ostream &);
+};
+
 class Function
 {
 public:
@@ -125,6 +150,7 @@ public:
 
 	//GCC C Extensions
 	bool func_attr_inline;
+	void GenerateAttributes();
 
 private:
 	static int deleteFunction(Function* func);
