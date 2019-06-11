@@ -71,11 +71,70 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static vector<FunctionAttribute*> attributes;
 static vector<Function*> FuncList;		// List of all functions in the program
 static vector<FactMgr*>  FMList;        // list of fact managers for each function
 static long cur_func_idx;				// Index into FuncList that we are currently working on
 static bool param_first=true;			// Flag to track output of commas
 static int builtin_functions_cnt;
+static bool attr_emitted = false;
+
+FunctionAttribute::FunctionAttribute(string name, int prob)
+	:  attribute(name), attribute_probability(prob)
+{
+}
+
+void
+FunctionAttribute::OutputAttribute(std::ostream &out, string option)
+{
+	if(!attr_emitted){
+		out << " __attribute__((" << attribute << option;
+		attr_emitted = true;
+	}
+	else
+		out << ", " << attribute << option;
+}
+
+BooleanFunctionAttribute::BooleanFunctionAttribute(string name, int prob)
+	: FunctionAttribute(name, prob)
+{
+}
+
+void
+BooleanFunctionAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(attribute_probability))
+		OutputAttribute(out, "");
+}
+
+MultiValuedFunctionAttribute::MultiValuedFunctionAttribute(string name, int prob, vector<string> arguments)
+	: FunctionAttribute(name, prob), attribute_values(arguments)
+{
+}
+
+void
+MultiValuedFunctionAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(attribute_probability))
+		OutputAttribute(out, "(\"" + attribute_values[rnd_upto(attribute_values.size())] + "\")");
+}
+
+void
+Function::GenerateAttributes()
+{
+	if(CGOptions::func_attr_flag()){
+		vector<string> common_func_attributes = {"artificial", "flatten", "no_reorder", "hot", "cold", "noipa", "used", "unused", \
+							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", \
+							"no_instrument_function", "no_sanitize_address", "no_sanitize_thread", \
+							"no_sanitize_undefined", "no_split_stack", "noinline", "noplt", "stack_protect"};
+		vector<string>::iterator itr;
+		for(itr = common_func_attributes.begin(); itr < common_func_attributes.end(); itr++)
+			attributes.push_back(new BooleanFunctionAttribute(*itr, FuncAttrProb));
+
+		attributes.push_back(new MultiValuedFunctionAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
+		attributes.push_back(new MultiValuedFunctionAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+	}
+}
 
 /*
  * find FactMgr for a function
@@ -497,6 +556,8 @@ Function::make_first(void)
 
 	if(CGOptions::func_attr_aligned() && rnd_flipcoin(FuncAttrAligned))
 		f->func_attr_aligned = true;
+
+	f->GenerateAttributes();
 	return f;
 }
 
@@ -574,6 +635,12 @@ Function::OutputForwardDecl(std::ostream &out)
 		int power = rnd_upto(16);
 		out << " __attribute__((aligned(" << (1 << power) << ")))";
 	}
+	vector<FunctionAttribute*>::iterator itr;
+	for(itr = attributes.begin(); itr < attributes.end(); itr++)
+		(*itr)->OutputAttributes(out);
+	if(attr_emitted)
+		out << "))";
+	attr_emitted = false;
 	out << ";";
 	outputln(out);
 }
