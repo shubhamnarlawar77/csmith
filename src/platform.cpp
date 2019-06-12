@@ -57,14 +57,14 @@
 // from the current time.
 //
 #ifndef HAVE_ARC4RANDOM_BUF
-#  if defined(__powerpc__) || defined(__powerpc64__)
+#  if defined(__powerpc__) || defined(__powerpc64__) || defined(__powerpc64le__)
 static inline unsigned long read_time(void)
 {
 	unsigned long a;
 	asm volatile("mftb %0" : "=r" (a));
 	return a;
 }
-#  elif defined(WIN32)
+#  elif defined(_MSC_VER) && defined(_M_IX86)
 static unsigned __int64 read_time(void)
 {
 	unsigned l, h;

@@ -43,7 +43,6 @@
 #include "SequenceFactory.h"
 #include "Sequence.h"
 #include "CGOptions.h"
-#include "DeltaMonitor.h"
 
 DefaultRndNumGenerator *DefaultRndNumGenerator::impl_ = 0;
 
@@ -102,10 +101,8 @@ DefaultRndNumGenerator::get_prefixed_name(const std::string &name)
 }
 
 void
-DefaultRndNumGenerator::add_number(int v, int bound, int k)
+DefaultRndNumGenerator::add_number(int, int, int)
 {
-	if (DeltaMonitor::is_running())
-		seq_->add_number(v, bound, k);
 }
 
 /*

@@ -264,28 +264,6 @@ FactUnion::imply(const Fact& f) const
 		const FactUnion& fu = (const FactUnion&)f;
 		if (fu.is_bottom()) return false;
 		if (equal(fu)) return true;
-
-		// type sensitive lattice: bottom -> size-determined types -> wider size determined types
-		//								  \-> char* -> other pointer types
-		if (CGOptions::union_read_type_sensitive()) {
-			const Type* t = get_last_written_type();
-			const Type* other_t = fu.get_last_written_type();
-			if (t->eType == ePointer && other_t->eType == ePointer) {
-				if (t->is_pointer_to_char()) {
-					return true;
-				}
-				return false;
-			}
-			if (t->SizeInBytes() == SIZE_UNKNOWN || other_t->SizeInBytes() == SIZE_UNKNOWN) {
-				return false;
-			}
-			if (t->SizeInBytes() <= other_t->SizeInBytes()) {
-				// only safe is the other field is not bitfield
-				if (!var->type->is_bitfield(fu.get_last_written_fid())) {
-					return true;
-				}
-			}
-		}
 	}
 	return false;
 }

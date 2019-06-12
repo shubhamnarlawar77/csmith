@@ -1,6 +1,6 @@
 // -*- mode: C++ -*-
 //
-// Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 The University of Utah
+// Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018 The University of Utah
 // All rights reserved.
 //
 // This file is part of `csmith', a random generator of C programs.
@@ -151,7 +151,7 @@ static void print_help()
 	cout << "  --output <filename> or -o <filename>: specify the output file name." << endl << endl;
 
 	// enabling/disabling options
-	cout << "  --argc | --no-argc: genereate main function with/without argv and argc being passed (enabled by default)." << endl << endl;
+	cout << "  --argc | --no-argc: generate main function with/without argv and argc being passed (enabled by default)." << endl << endl;
 	cout << "  --arrays | --no-arrays: enable | disable arrays (enabled by default)." << endl << endl;
 	cout << "  --bitfields | --no-bitfields: enable | disable full-bitfields structs (enabled by default)." << endl << endl;
 	cout << "  --checksum | --no-checksum: enable | disable checksum calculation (enabled by default)." << endl << endl;
@@ -242,11 +242,9 @@ static void print_advanced_help()
 	cout << "Only works in the exhaustive mode." << endl << endl;
 
 	// target platforms
-	cout << "  --msp: enable certain msp related features " << endl << endl;
 	cout << "  --ccomp: generate compcert-compatible code" << endl << endl;
 
 	// symblic excutions
-	cout << "  --splat: enable splat extension" << endl << endl;
 	cout << "  --klee: enable klee extension" << endl << endl;
 	cout << "  --crest: enable crest extension" << endl << endl;
 
@@ -256,7 +254,7 @@ static void print_advanced_help()
 	cout << "Can only be used with --coverage-test." << endl << endl;
 
 	cout << "  --func1_max_params <num>: specify the number of symbolic variables passed to func_1 (default 3). ";
-	cout << "Only used when --splat | --crest | --klee | --coverage-test is enabled." << endl << endl;
+	cout << "Only used when --crest | --klee | --coverage-test is enabled." << endl << endl;
 
 	// struct/union related options
 	cout << "  --fixed-struct-fields: fix the size of struct fields to max-struct-fields (default 10)." << endl << endl;
@@ -329,9 +327,6 @@ static void print_advanced_help()
 	cout << "  --null-ptr-deref-prob <N>: allow null pointers to be dereferenced with probability N% (0 by default)." << endl << endl;
 
 	cout << "  --dangling-ptr-deref-prob <N>: allow dangling pointers to be dereferenced with probability N% (0 by default)." << endl << endl;
-
-	cout << "  --union-read-type-sensitive | --no-union-read-type-sensitive: allow | disallow reading an union field when there is no risk of "
-		 << "reading padding bits (enabled by default)." << endl << endl;
 
 	cout << "  --max-struct-nested-level: controls the max depth of nested structs (default is 3)." << endl << endl;
 	cout << "  --no-hash-value-printf: do not emit printf on the index of an array" << endl << endl;
@@ -414,11 +409,6 @@ main(int argc, char **argv)
 			continue;
 		}
 
-		if (strcmp (argv[i], "--splat") == 0) {
-			CGOptions::splat(true);
-			continue;
-		}
-
 		if (strcmp (argv[i], "--klee") == 0) {
 			CGOptions::klee(true);
 			continue;
@@ -479,11 +469,6 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--compact-output") == 0) {
 			CGOptions::compact_output(true);
-			continue;
-		}
-
-		if (strcmp (argv[i], "--msp") == 0) {
-			CGOptions::msp(true);
 			continue;
 		}
 
@@ -1263,16 +1248,6 @@ main(int argc, char **argv)
 			continue;
 		}
 
-		if (strcmp (argv[i], "--union-read-type-sensitive") == 0) {
-			CGOptions::union_read_type_sensitive(true);
-			continue;
-		}
-
-		if (strcmp (argv[i], "--no-union-read-type-sensitive") == 0) {
-			CGOptions::union_read_type_sensitive(false);
-			continue;
-		}
-
 		if (strcmp (argv[i], "--pre-incr-operator") == 0) {
 			CGOptions::pre_incr_operator(true);
 			continue;
@@ -1400,23 +1375,6 @@ main(int argc, char **argv)
 
 		if (strcmp(argv[i], "--cpp11") == 0) {
 			CGOptions::cpp11(true);
-			continue;
-		}
-
-		if (strcmp (argv[i], "--reduce") == 0) {
-			string filename;
-			i++;
-			arg_check(argc, i);
-			if (!parse_string_arg(argv[i], filename)) {
-				cout<< "please specify reduction directive file!" << std::endl;
-				exit(-1);
-			}
-			ifstream conf(filename.c_str());
-			if (conf.fail()) {
-				cout<< "can't read reduction directive file " << filename << "!" << std::endl;
-				exit(-1);
-			}
-			CGOptions::init_reducer(filename);
 			continue;
 		}
 
