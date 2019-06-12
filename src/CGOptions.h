@@ -464,9 +464,6 @@ public:
 	static bool func_attr_inline(void);
         static bool func_attr_inline(bool p);
 
-	static bool func_attr_aligned(void);
-	static bool func_attr_aligned(bool p);
-
 	static bool func_attr_flag(void);
 	static bool func_attr_flag(bool p);
 private:
@@ -615,7 +612,6 @@ private:
 
 	//GCC C Extensions
 	static bool	func_attr_inline_;
-	static bool	func_attr_aligned_;
 	static bool	func_attr_flag_;
 private:
 	CGOptions(void);

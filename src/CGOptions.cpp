@@ -198,7 +198,6 @@ DEFINE_GETTER_SETTER_BOOL(fast_execution);
 
 //GCC C Extensions
 DEFINE_GETTER_SETTER_BOOL(func_attr_inline);
-DEFINE_GETTER_SETTER_BOOL(func_attr_aligned);
 DEFINE_GETTER_SETTER_BOOL(func_attr_flag);
 
 void

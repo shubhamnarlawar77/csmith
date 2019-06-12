@@ -164,7 +164,6 @@ public:
 
 	//GCC C Extensions
 	bool func_attr_inline;
-	bool func_attr_aligned;
 	void GenerateAttributes();
 
 private:

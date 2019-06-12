@@ -505,9 +505,6 @@ Probabilities::set_single_name_maps()
 	//for choosing function attribute inline
 	set_single_name("func_attr_inline", pFuncAttrInline);
 
-	//for choosing function attribute aligned
-	set_single_name("func_attr_aligned", pFuncAttrAligned);
-
 	//for choosing function attributes
 	set_single_name("func_attr_flag", pFuncAttrProb);
 }
@@ -552,7 +549,6 @@ Probabilities::initialize_single_probs()
 
 	//GCC C Extensions
 	m[pFuncAttrInline] = 50;
-	m[pFuncAttrAligned] = 25;
 	m[pFuncAttrProb] = 30;
 
 	if (CGOptions::volatiles())
