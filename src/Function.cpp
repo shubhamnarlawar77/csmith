@@ -133,6 +133,19 @@ AlignedFunctionAttribute::OutputAttributes(std::ostream &out)
 	}
 }
 
+SectionFunctionAttribute::SectionFunctionAttribute(string name, int prob)
+	: FunctionAttribute(name, prob)
+{
+}
+
+void
+SectionFunctionAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(FuncAttrProb)){
+		OutputAttribute(out, "(\"usersection" + to_string(rnd_upto(10)) + "\")");
+	}
+}
+
 void
 Function::GenerateAttributes()
 {
@@ -148,6 +161,7 @@ Function::GenerateAttributes()
 		attributes.push_back(new MultiValuedFunctionAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
 		attributes.push_back(new MultiValuedFunctionAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
 		attributes.push_back(new AlignedFunctionAttribute("aligned", FuncAttrProb));
+		attributes.push_back(new SectionFunctionAttribute("section", FuncAttrProb));
 	}
 }
 

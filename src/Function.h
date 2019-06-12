@@ -91,6 +91,13 @@ public:
 	void OutputAttributes(std::ostream &);
 };
 
+class SectionFunctionAttribute : public FunctionAttribute
+{
+public:
+	SectionFunctionAttribute(string, int);
+	void OutputAttributes(std::ostream &);
+};
+
 class Function
 {
 public:
