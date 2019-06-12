@@ -48,6 +48,14 @@ public:
 	string OutputAttributes();
 };
 
+//Generates usersections to put functions in different sections
+class SectionAttribute : public Attribute
+{
+public:
+	SectionAttribute(string, int);
+	string OutputAttributes();
+};
+
 //Generates function and types attributes
 class AttributeGenerator
 {

@@ -77,3 +77,17 @@ AlignedAttribute::OutputAttributes()
 	else
 		return "";
 }
+
+SectionAttribute::SectionAttribute(string name, int prob)
+	: Attribute(name, prob)
+{
+}
+
+string
+SectionAttribute::OutputAttributes()
+{
+	if(rnd_flipcoin(attribute_probability))
+		return attribute + "(\"usersection" + to_string(rnd_upto(10)) + "\")";
+	else
+		return "";
+}
