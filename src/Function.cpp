@@ -119,6 +119,20 @@ MultiValuedFunctionAttribute::OutputAttributes(std::ostream &out)
 		OutputAttribute(out, "(\"" + attribute_values[rnd_upto(attribute_values.size())] + "\")");
 }
 
+AlignedFunctionAttribute::AlignedFunctionAttribute(string name, int prob)
+	: FunctionAttribute(name, prob)
+{
+}
+
+void
+AlignedFunctionAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(FuncAttrProb)){
+		int power = rnd_upto(16);
+		OutputAttribute(out, "(" + to_string(1 << power) + ")");
+	}
+}
+
 void
 Function::GenerateAttributes()
 {
@@ -133,6 +147,7 @@ Function::GenerateAttributes()
 
 		attributes.push_back(new MultiValuedFunctionAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
 		attributes.push_back(new MultiValuedFunctionAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+		attributes.push_back(new AlignedFunctionAttribute("aligned", FuncAttrProb));
 	}
 }
 

@@ -84,6 +84,13 @@ public:
 	void OutputAttributes(std::ostream &);
 };
 
+class AlignedFunctionAttribute : public FunctionAttribute
+{
+public:
+	AlignedFunctionAttribute(string, int);
+	void OutputAttributes(std::ostream &);
+};
+
 class Function
 {
 public:
