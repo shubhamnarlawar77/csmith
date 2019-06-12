@@ -93,6 +93,7 @@ Function::GenerateAttributes()
 
 		func_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
 		func_attr_generator.attributes.push_back(new MultiValuedAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+		func_attr_generator.attributes.push_back(new AlignedAttribute("aligned", FuncAttrProb, 16));
 	}
 }
 

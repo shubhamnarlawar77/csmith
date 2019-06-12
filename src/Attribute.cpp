@@ -63,3 +63,17 @@ MultiValuedAttribute::OutputAttributes()
 	else
 		return "";
 }
+
+AlignedAttribute::AlignedAttribute(string name, int prob, int alignment_factor)
+	: Attribute(name, prob), alignment(alignment_factor)
+{
+}
+
+string
+AlignedAttribute::OutputAttributes()
+{
+	if(rnd_flipcoin(attribute_probability))
+		return 	attribute + "(" + to_string(1 << rnd_upto(alignment)) + ")";
+	else
+		return "";
+}

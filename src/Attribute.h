@@ -38,6 +38,16 @@ public:
 	string OutputAttributes();
 };
 
+//Generates alignment attribute
+class AlignedAttribute : public Attribute
+{
+public:
+	//alignment factor - [functions] = 16 and [types] = 8 i.e. functions can take alignment upto 2^16 where as type take upto 2^8
+	int alignment;
+	AlignedAttribute(string, int, int);
+	string OutputAttributes();
+};
+
 //Generates function and types attributes
 class AttributeGenerator
 {
