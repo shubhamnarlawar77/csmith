@@ -446,6 +446,7 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
 
 	// dummy variable representing return variable, we don't care about the type, so use 0
 	string rvname = f->name + "_" + "rv";
+	f->alias_name = f->name + "_alias";
 	CVQualifiers ret_qfer = qfer==0 ? CVQualifiers::random_qualifiers(type, Effect::READ, cg_context, true)
 		                            : qfer->random_qualifiers(true, Effect::READ, cg_context);
 	ERROR_GUARD(NULL);
@@ -485,6 +486,7 @@ Function::make_first(void)
 	Function *f = new Function(RandomFunctionName(), ty);
 	// dummy variable representing return variable, we don't care about the type, so use 0
 	string rvname = f->name + "_" + "rv";
+	f->alias_name = f->name + "_alias";
 	CVQualifiers ret_qfer = CVQualifiers::random_qualifiers(ty);
 	ERROR_GUARD(NULL);
 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
@@ -574,6 +576,18 @@ Function::OutputHeader(std::ostream &out)
 	out << ")";
 }
 
+void
+Function::OutputHeaderAlias(std::ostream &out)
+{
+	if (CGOptions::force_globals_static()) {
+		out << "static ";
+	}
+	rv->qfer.output_qualified_type(return_type, out);
+	out << " " << get_prefixed_name(alias_name) << "(";
+	OutputFormalParamList( out );
+	out << ") __attribute__((alias(\"" << get_prefixed_name(name) << "\")))";
+}
+
 /*
  *
  */
@@ -586,6 +600,14 @@ Function::OutputForwardDecl(std::ostream &out)
 	if(func_attr_inline)
 		out << " __attribute__((always_inline))";
 	func_attr_generator.GenerateAllAttributes(out);
+	out << ";";
+	outputln(out);
+}
+
+void
+Function::OutputForwardDeclAlias(std::ostream &out)
+{
+	OutputHeaderAlias(out);
 	out << ";";
 	outputln(out);
 }
@@ -866,6 +888,13 @@ OutputForwardDecl(Function *func, std::ostream *pOut)
 	return 0;
 }
 
+static int
+OutputForwardDeclAlias(Function *func, std::ostream *pOut)
+{
+	func->OutputForwardDeclAlias(*pOut);
+	return 0;
+}
+
 /*
  *
  */
@@ -887,6 +916,14 @@ OutputForwardDeclarations(std::ostream &out)
 	output_comment_line(out, "--- FORWARD DECLARATIONS ---");
 	for_each(FuncList.begin(), FuncList.end(),
 			 std::bind2nd(std::ptr_fun(OutputForwardDecl), &out));
+
+	if(CGOptions::func_attr_flag()){
+		outputln(out);
+		outputln(out);
+		output_comment_line(out, "--- FORWARD ALIAS DECLARATIONS ---");
+		for_each(FuncList.begin(), FuncList.end(),
+				 std::bind2nd(std::ptr_fun(OutputForwardDeclAlias), &out));
+	}
 }
 
 /*
