@@ -72,6 +72,78 @@ static vector<Type *> AllTypes;
 static vector<Type *> derived_types;
 
 //////////////////////////////////////////////////////////////////////
+
+static vector<TypeAttribute*> attributes;
+static bool attr_emitted = false;
+
+TypeAttribute::TypeAttribute(string name, int prob)
+	:  attribute(name), attribute_probability(prob)
+{
+}
+
+void
+TypeAttribute::OutputAttribute(std::ostream &out, string option)
+{
+	if(!attr_emitted){
+		out << " __attribute__((" << attribute << option;
+		attr_emitted = true;
+	}
+	else
+		out << ", " << attribute << option;
+}
+
+BooleanTypeAttribute::BooleanTypeAttribute(string name, int prob)
+	: TypeAttribute(name, prob)
+{
+}
+
+void
+BooleanTypeAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(TypeAttrProb))
+		OutputAttribute(out, "");
+}
+
+MultiValuedTypeAttribute::MultiValuedTypeAttribute(string name, int prob, vector<string> arguments)
+	: TypeAttribute(name, prob), attribute_values(arguments)
+{
+}
+
+void
+MultiValuedTypeAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(attribute_probability))
+		OutputAttribute(out, "(\"" + attribute_values[rnd_upto(attribute_values.size())] + "\")");
+}
+
+AlignedTypeAttribute::AlignedTypeAttribute(string name, int prob)
+	: TypeAttribute(name, prob)
+{
+}
+
+void
+AlignedTypeAttribute::OutputAttributes(std::ostream &out)
+{
+	if(rnd_flipcoin(attribute_probability)){
+		int power = rnd_upto(8);
+		OutputAttribute(out, "(" + to_string(1 << power) + ")");
+	}
+}
+
+void
+GenerateAttributes()
+{
+	if(CGOptions::type_attr_flag()){
+		vector<string> common_type_attributes = {"deprecated", "unused", "transparent_union"};
+		vector<string>::iterator itr;
+		attributes.push_back(new AlignedTypeAttribute("aligned", TypeAttrProb));
+		attributes.push_back(new AlignedTypeAttribute("warn_if_not_aligned", TypeAttrProb));
+		attributes.push_back(new MultiValuedTypeAttribute("visibility", TypeAttrProb, {"default", "hidden", "protected", "internal"}));
+		for(itr = common_type_attributes.begin(); itr < common_type_attributes.end(); itr++)
+			attributes.push_back(new BooleanTypeAttribute(*itr, TypeAttrProb));
+	}
+}
+
 class NonVoidTypeFilter : public Filter
 {
 public:
@@ -317,6 +389,8 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
     else
         eType = eUnion;
     sid =  sequence++;
+	struct_attr_flag = false;
+	union_attr_flag = false;
 }
 
 // --------------------------------------------------------------
@@ -1147,6 +1221,7 @@ Type::make_random_struct_type(void)
     }
     bool hasImplicitNontrivialAssignOps = hasAssignOps || checkImplicitNontrivialAssignOps(random_fields);
     Type* new_type = new Type(random_fields, true, packed, qualifiers, fields_length, hasAssignOps, hasImplicitNontrivialAssignOps);
+    new_type->struct_attr_flag = true;
     return new_type;
 }
 
@@ -1168,6 +1243,7 @@ Type::make_random_union_type(void)
 	bool hasAssignOps = if_union_will_have_assign_ops();
 	bool hasImplicitNontrivialAssignOps = hasAssignOps || checkImplicitNontrivialAssignOps(fields);
 	Type* new_type = new Type(fields, false, false, qfers, lens, hasAssignOps, hasImplicitNontrivialAssignOps);
+	new_type->union_attr_flag = true;
 	return new_type;
 }
 
@@ -1218,6 +1294,7 @@ Type::GenerateSimpleTypes(void)
 void
 GenerateAllTypes(void)
 {
+	GenerateAttributes();
 	// In the exhaustive mode, we want to generate all type first.
 	// We don't support struct for now
 	if (CGOptions::dfs_exhaustive()) {
@@ -1911,7 +1988,21 @@ void OutputStructUnion(Type* type, std::ostream &out)
 			OutputUnionAssignOps(type, out, true);
 		}
 
-        out << "};";
+        out << "}";
+	if(type->struct_attr_flag){
+		vector<TypeAttribute*>::iterator itr;
+		for(itr = attributes.begin(); itr < attributes.end() - 1 ; itr++)
+		(*itr)->OutputAttributes(out);
+	}
+	if(type->union_attr_flag){
+		vector<TypeAttribute*>::iterator itr;
+		for(itr = attributes.begin(); itr < attributes.end(); itr++)
+		(*itr)->OutputAttributes(out);
+	}
+	if(attr_emitted)
+		out << "))";
+	attr_emitted = false;
+	out << ";";
 		really_outputln(out);
         if (type->packed_) {
 		if (CGOptions::ccomp()) {

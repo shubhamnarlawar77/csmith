@@ -95,6 +95,38 @@ enum eMatchType
 	eFlexible,
 };
 
+class TypeAttribute
+{
+public:
+	string attribute;
+	int attribute_probability;
+	TypeAttribute(string, int);
+	void OutputAttribute(std::ostream &, string);
+	virtual void OutputAttributes(std::ostream &) = 0;
+};
+
+class BooleanTypeAttribute : public TypeAttribute
+{
+public:
+	BooleanTypeAttribute(string, int);
+	void OutputAttributes(std::ostream &);
+};
+
+class MultiValuedTypeAttribute : public TypeAttribute
+{
+public:
+	vector<string> attribute_values;
+	MultiValuedTypeAttribute(string, int, vector<string>);
+	void OutputAttributes(std::ostream &);
+};
+
+class AlignedTypeAttribute : public TypeAttribute
+{
+public:
+	AlignedTypeAttribute(string, int);
+	void OutputAttributes(std::ostream &);
+};
+
 /*
  *
  */
@@ -269,6 +301,10 @@ public:
 	static Type* find_pointer_type(const Type* t, bool add);
 	static Type* find_type(const Type* t);
 
+	//GCC C Extensions
+	bool struct_attr_flag;
+	bool union_attr_flag;
+
 // private:
 	eTypeDesc eType;
 	const Type *ptr_type;
@@ -301,6 +337,7 @@ private:
 };
 
 void GenerateAllTypes(void);
+void GenerateAttributes();
 const Type * get_int_type(void);
 void OutputStructUnionDeclarations(std::ostream &);
 void OutputStructAssignOps(Type* type, std::ostream &out, bool vol);
