@@ -84,7 +84,7 @@ Function::GenerateAttributes()
 {
 	if(CGOptions::func_attr_flag()){
 		vector<string> common_func_attributes = {"artificial", "flatten", "no_reorder", "hot", "cold", "noipa", "used", "unused", \
-							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", \
+							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", "noclone", \
 							"no_instrument_function", "no_sanitize_address", "no_sanitize_thread", \
 							"no_sanitize_undefined", "no_split_stack", "noinline", "noplt", "stack_protect"};
 		vector<string>::iterator itr;
@@ -93,6 +93,7 @@ Function::GenerateAttributes()
 
 		func_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
 		func_attr_generator.attributes.push_back(new MultiValuedAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+		func_attr_generator.attributes.push_back(new MultiValuedAttribute("optimize", FuncAttrProb, {"-O0", "-O1", "-O2", "-O3", "-Os", "-Ofast", "-Og"}));
 		func_attr_generator.attributes.push_back(new AlignedAttribute("aligned", FuncAttrProb, 16));
 		func_attr_generator.attributes.push_back(new SectionAttribute("section", FuncAttrProb));
 	}
