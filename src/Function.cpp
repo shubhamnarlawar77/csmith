@@ -71,52 +71,83 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static vector<FunctionAttribute*> attributes;
+AttributeGenerator func_attr_generator;
 static vector<Function*> FuncList;		// List of all functions in the program
 static vector<FactMgr*>  FMList;        // list of fact managers for each function
 static long cur_func_idx;				// Index into FuncList that we are currently working on
 static bool param_first=true;			// Flag to track output of commas
 static int builtin_functions_cnt;
-static bool attr_emitted = false;
 
-FunctionAttribute::FunctionAttribute(string name, int prob)
+AttributeGenerator::AttributeGenerator()
+	: attr_emitted(false)
+{
+}
+
+Attribute::Attribute(string name, int prob)
 	:  attribute(name), attribute_probability(prob)
 {
 }
 
 void
-FunctionAttribute::OutputAttribute(std::ostream &out, string option)
+Attribute::OutputAttribute(std::ostream &out, string option, AttributeGenerator &ag)
 {
-	if(!attr_emitted){
+	if(!ag.attr_emitted){
 		out << " __attribute__((" << attribute << option;
-		attr_emitted = true;
+		ag.attr_emitted = true;
 	}
 	else
 		out << ", " << attribute << option;
 }
 
-BooleanFunctionAttribute::BooleanFunctionAttribute(string name, int prob)
-	: FunctionAttribute(name, prob)
+BooleanAttribute::BooleanAttribute(string name, int prob)
+	: Attribute(name, prob)
 {
 }
 
 void
-BooleanFunctionAttribute::OutputAttributes(std::ostream &out)
+BooleanAttribute::OutputAttributes(std::ostream &out, AttributeGenerator &ag)
 {
 	if(rnd_flipcoin(attribute_probability))
-		OutputAttribute(out, "");
+		OutputAttribute(out, "", ag);
 }
 
-MultiValuedFunctionAttribute::MultiValuedFunctionAttribute(string name, int prob, vector<string> arguments)
-	: FunctionAttribute(name, prob), attribute_values(arguments)
+MultiValuedAttribute::MultiValuedAttribute(string name, int prob, vector<string> arguments)
+	: Attribute(name, prob), attribute_values(arguments)
 {
 }
 
 void
-MultiValuedFunctionAttribute::OutputAttributes(std::ostream &out)
+MultiValuedAttribute::OutputAttributes(std::ostream &out, AttributeGenerator &ag)
 {
 	if(rnd_flipcoin(attribute_probability))
-		OutputAttribute(out, "(\"" + attribute_values[rnd_upto(attribute_values.size())] + "\")");
+		OutputAttribute(out, "(\"" + attribute_values[rnd_upto(attribute_values.size())] + "\")", ag);
+}
+
+AlignedAttribute::AlignedAttribute(string name, int prob, int alignment)
+	: Attribute(name, prob), aligned_factor(alignment)
+{
+}
+
+void
+AlignedAttribute::OutputAttributes(std::ostream &out, AttributeGenerator &ag)
+{
+	if(rnd_flipcoin(attribute_probability)){
+		int power = rnd_upto(aligned_factor);
+		OutputAttribute(out, "(" + to_string(1 << power) + ")", ag);
+	}
+}
+
+SectionAttribute::SectionAttribute(string name, int prob)
+	: Attribute(name, prob)
+{
+}
+
+void
+SectionAttribute::OutputAttributes(std::ostream &out, AttributeGenerator &ag)
+{
+	if(rnd_flipcoin(attribute_probability)){
+		OutputAttribute(out, "(\"usersection" + to_string(rnd_upto(10)) + "\")", ag);
+	}
 }
 
 void
@@ -124,15 +155,17 @@ Function::GenerateAttributes()
 {
 	if(CGOptions::func_attr_flag()){
 		vector<string> common_func_attributes = {"artificial", "flatten", "no_reorder", "hot", "cold", "noipa", "used", "unused", \
-							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", \
+							"nothrow", "deprecated", "no_icf", "no_profile_instrument_function", "noclone", \
 							"no_instrument_function", "no_sanitize_address", "no_sanitize_thread", \
 							"no_sanitize_undefined", "no_split_stack", "noinline", "noplt", "stack_protect"};
 		vector<string>::iterator itr;
 		for(itr = common_func_attributes.begin(); itr < common_func_attributes.end(); itr++)
-			attributes.push_back(new BooleanFunctionAttribute(*itr, FuncAttrProb));
+			func_attr_generator.attributes.push_back(new BooleanAttribute(*itr, FuncAttrProb));
 
-		attributes.push_back(new MultiValuedFunctionAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
-		attributes.push_back(new MultiValuedFunctionAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+		func_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", FuncAttrProb, {"default", "hidden", "protected", "internal"}));
+		func_attr_generator.attributes.push_back(new MultiValuedAttribute("no_sanitize", FuncAttrProb, {"address", "thread", "undefined", "kernel-address", "pointer-compare", "pointer-subtract", "leak"}));
+		func_attr_generator.attributes.push_back(new AlignedAttribute("aligned", FuncAttrProb, 16));
+		func_attr_generator.attributes.push_back(new SectionAttribute("section", FuncAttrProb));
 	}
 }
 
@@ -484,6 +517,7 @@ Function::make_random_signature(const CGContext& cg_context, const Type* type, c
 
 	// dummy variable representing return variable, we don't care about the type, so use 0
 	string rvname = f->name + "_" + "rv";
+	f->alias_name = f->name + "_alias";
 	CVQualifiers ret_qfer = qfer==0 ? CVQualifiers::random_qualifiers(type, Effect::READ, cg_context, true)
 		                            : qfer->random_qualifiers(true, Effect::READ, cg_context);
 	ERROR_GUARD(NULL);
@@ -523,6 +557,7 @@ Function::make_first(void)
 	Function *f = new Function(RandomFunctionName(), ty);
 	// dummy variable representing return variable, we don't care about the type, so use 0
 	string rvname = f->name + "_" + "rv";
+	f->alias_name = f->name + "_alias";
 	CVQualifiers ret_qfer = CVQualifiers::random_qualifiers(ty);
 	ERROR_GUARD(NULL);
 	f->rv = Variable::CreateVariable(rvname, ty, NULL, &ret_qfer);
@@ -612,6 +647,18 @@ Function::OutputHeader(std::ostream &out)
 	out << ")";
 }
 
+void
+Function::OutputHeaderAlias(std::ostream &out)
+{
+	if (CGOptions::force_globals_static()) {
+		out << "static ";
+	}
+	rv->qfer.output_qualified_type(return_type, out);
+	out << " " << get_prefixed_name(alias_name) << "(";
+	OutputFormalParamList( out );
+	out << ") __attribute__((alias(\"" << get_prefixed_name(name) << "\")))";
+}
+
 /*
  *
  */
@@ -623,12 +670,21 @@ Function::OutputForwardDecl(std::ostream &out)
 	OutputHeader(out);
 	if(func_attr_inline)
 		out << " __attribute__((always_inline))";
-	vector<FunctionAttribute*>::iterator itr;
-	for(itr = attributes.begin(); itr < attributes.end(); itr++)
-		(*itr)->OutputAttributes(out);
-	if(attr_emitted)
+	vector<Attribute*>::iterator itr;
+	for(itr = func_attr_generator.attributes.begin(); itr < func_attr_generator.attributes.end(); itr++)
+		(*itr)->OutputAttributes(out, func_attr_generator);
+	if(func_attr_generator.attr_emitted){
 		out << "))";
-	attr_emitted = false;
+		func_attr_generator.attr_emitted = false;
+	}
+	out << ";";
+	outputln(out);
+}
+
+void
+Function::OutputForwardDeclAlias(std::ostream &out)
+{
+	OutputHeaderAlias(out);
 	out << ";";
 	outputln(out);
 }
@@ -909,6 +965,13 @@ OutputForwardDecl(Function *func, std::ostream *pOut)
 	return 0;
 }
 
+static int
+OutputForwardDeclAlias(Function *func, std::ostream *pOut)
+{
+	func->OutputForwardDeclAlias(*pOut);
+	return 0;
+}
+
 /*
  *
  */
@@ -930,6 +993,14 @@ OutputForwardDeclarations(std::ostream &out)
 	output_comment_line(out, "--- FORWARD DECLARATIONS ---");
 	for_each(FuncList.begin(), FuncList.end(),
 			 std::bind2nd(std::ptr_fun(OutputForwardDecl), &out));
+
+	if(CGOptions::func_attr_flag()){
+		outputln(out);
+		outputln(out);
+		output_comment_line(out, "--- FORWARD ALIAS DECLARATIONS ---");
+		for_each(FuncList.begin(), FuncList.end(),
+				 std::bind2nd(std::ptr_fun(OutputForwardDeclAlias), &out));
+	}
 }
 
 /*

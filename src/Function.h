@@ -56,32 +56,56 @@ class CGContext;
 class Fact;
 class Constant;
 class CVQualifiers;
+class AttributeGenerator;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class FunctionAttribute
+class Attribute
 {
 public:
 	string attribute;
 	int attribute_probability;
-	FunctionAttribute(string, int);
-	void OutputAttribute(std::ostream &, string);
-	virtual void OutputAttributes(std::ostream &) = 0;
+	Attribute(string, int);
+	void OutputAttribute(std::ostream &, string, AttributeGenerator &);
+	virtual void OutputAttributes(std::ostream &, AttributeGenerator &) = 0;
 };
 
-class BooleanFunctionAttribute : public FunctionAttribute
+class BooleanAttribute : public Attribute
 {
 public:
-	BooleanFunctionAttribute(string, int);
-	void OutputAttributes(std::ostream &);
+	BooleanAttribute(string, int);
+	void OutputAttributes(std::ostream &, AttributeGenerator &);
 };
 
-class MultiValuedFunctionAttribute : public FunctionAttribute
+class MultiValuedAttribute : public Attribute
 {
 public:
 	vector<string> attribute_values;
-	MultiValuedFunctionAttribute(string, int, vector<string>);
-	void OutputAttributes(std::ostream &);
+	MultiValuedAttribute(string, int, vector<string>);
+	void OutputAttributes(std::ostream &, AttributeGenerator &);
+};
+
+class AlignedAttribute : public Attribute
+{
+public:
+	int aligned_factor;
+	AlignedAttribute(string, int, int);
+	void OutputAttributes(std::ostream &, AttributeGenerator &);
+};
+
+class SectionAttribute : public Attribute
+{
+public:
+	SectionAttribute(string, int);
+	void OutputAttributes(std::ostream &, AttributeGenerator &);
+};
+
+class AttributeGenerator
+{
+public:
+	AttributeGenerator();
+	vector<Attribute*> attributes;
+	bool attr_emitted;
 };
 
 class Function
@@ -151,6 +175,8 @@ public:
 	//GCC C Extensions
 	bool func_attr_inline;
 	void GenerateAttributes();
+	std::string alias_name;
+	void OutputForwardDeclAlias(std::ostream &);
 
 private:
 	static int deleteFunction(Function* func);
@@ -158,6 +184,7 @@ private:
 	Function(const std::string &name, const Type *return_type);
 	Function(const std::string &name, const Type *return_type, bool is_builtin);
 	void OutputHeader(std::ostream &);
+	void OutputHeaderAlias(std::ostream &);
 	void OutputFormalParamList(std::ostream &);
 	void GenerateBody(const CGContext& prev_context);
 	void make_return_const();

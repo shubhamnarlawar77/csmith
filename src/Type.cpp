@@ -54,6 +54,7 @@
 #include "Probabilities.h"
 #include "DepthSpec.h"
 #include "Enumerator.h"
+#include "Function.h"
 
 using namespace std;
 
@@ -71,7 +72,20 @@ Type *Type::void_type = NULL;
 static vector<Type *> AllTypes;
 static vector<Type *> derived_types;
 
+AttributeGenerator type_attr_generator;
+
 //////////////////////////////////////////////////////////////////////
+
+void
+TypeAttributes()
+{
+	type_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", TypeAttrProb, {"default", "hidden", "protected", "internal"}));
+	type_attr_generator.attributes.push_back(new AlignedAttribute("aligned", TypeAttrProb, 8));
+	type_attr_generator.attributes.push_back(new BooleanAttribute("deprecated", TypeAttrProb));
+	type_attr_generator.attributes.push_back(new BooleanAttribute("unused", TypeAttrProb));
+	type_attr_generator.attributes.push_back(new BooleanAttribute("transparent_union", TypeAttrProb));
+}
+
 class NonVoidTypeFilter : public Filter
 {
 public:
@@ -1218,6 +1232,7 @@ Type::GenerateSimpleTypes(void)
 void
 GenerateAllTypes(void)
 {
+	TypeAttributes();
 	// In the exhaustive mode, we want to generate all type first.
 	// We don't support struct for now
 	if (CGOptions::dfs_exhaustive()) {
@@ -1911,7 +1926,22 @@ void OutputStructUnion(Type* type, std::ostream &out)
 			OutputUnionAssignOps(type, out, true);
 		}
 
-        out << "};";
+        out << "}";
+	if(type->eType == eStruct){
+		vector<Attribute*>::iterator itr;
+		for(itr = type_attr_generator.attributes.begin(); itr < type_attr_generator.attributes.end() - 1 ; itr++)
+			(*itr)->OutputAttributes(out, type_attr_generator);
+	}
+	if(type->eType == eUnion){
+		vector<Attribute*>::iterator itr;
+		for(itr = type_attr_generator.attributes.begin(); itr < type_attr_generator.attributes.end(); itr++)
+			(*itr)->OutputAttributes(out, type_attr_generator);
+	}
+	if(type_attr_generator.attr_emitted){
+		out << "))";
+		type_attr_generator.attr_emitted = false;
+	}
+	out << ";";
 		really_outputln(out);
         if (type->packed_) {
 		if (CGOptions::ccomp()) {
