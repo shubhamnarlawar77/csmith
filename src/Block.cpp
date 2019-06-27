@@ -295,6 +295,15 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 	ss << "block id: " << stm_id;
 	output_comment_line(out, ss.str());
 
+	bool atomic_blk = false;
+	if (CGOptions::trans_memory_atomic() && rnd_flipcoin(TransAtomicProb)){
+		outputln(out);
+		output_tab(out, indent);
+		out << "__transaction_atomic {";
+		outputln(out);
+		atomic_blk = true;
+	}
+
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH++;" << endl;
 	}
@@ -308,6 +317,12 @@ Block::Output(std::ostream &out, FactMgr* fm, int indent) const
 
 	if (CGOptions::depth_protect()) {
 		out << "DEPTH--;" << endl;
+	}
+	if (atomic_blk) {
+		indent--;
+		output_tab(out, indent);
+		out << "}";
+		outputln(out);
 	}
 	indent--;
 

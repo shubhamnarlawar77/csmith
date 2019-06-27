@@ -510,6 +510,9 @@ Probabilities::set_single_name_maps()
 
 	//for choosing type attributes
 	set_single_name("type_attr_flag", pTypeAttrProb);
+
+	//for generating transaction atomic blocks
+	set_single_name("trans_memory_atomic", pTransAtomicProb);
 }
 
 void
@@ -554,6 +557,7 @@ Probabilities::initialize_single_probs()
 	m[pFuncAttrInline] = 50;
 	m[pFuncAttrProb] = 30;
 	m[pTypeAttrProb] = 50;
+	m[pTransAtomicProb] = 3;
 
 	if (CGOptions::volatiles())
 		m[pRegularVolatileProb] = 50;

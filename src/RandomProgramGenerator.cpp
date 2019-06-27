@@ -213,6 +213,7 @@ static void print_help()
 	cout << " --func-attr-inline | --no-func-attr-inline: enable | disable generate function attribute inline (disabled by default)." << endl << endl;
 	cout << " --function-attributes | --no-func-attributes: enable | disable generate common function attributes (disabled by default)." << endl << endl;
 	cout << " --type-attributes | --no-type-attributes: enable | disable generate common type attributes (disabled by default)." << endl << endl;
+	cout << " --trans-memory-atomic | --no-trans-memory-atomic : enable | disable transactional memory __transaction_atomic extension (disable by default)." << endl << endl;
 
 }
 
@@ -828,6 +829,17 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-type-attributes") == 0) {
 			CGOptions::type_attr_flag(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--trans-memory-atomic") == 0) {
+			CGOptions::trans_memory_atomic(true);
+			CGOptions::volatiles(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-trans-memory-atomic") == 0) {
+			CGOptions::trans_memory_atomic(false);
 			continue;
 		}
 

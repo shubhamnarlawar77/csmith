@@ -199,6 +199,7 @@ DEFINE_GETTER_SETTER_BOOL(fast_execution);
 DEFINE_GETTER_SETTER_BOOL(func_attr_inline);
 DEFINE_GETTER_SETTER_BOOL(func_attr_flag);
 DEFINE_GETTER_SETTER_BOOL(type_attr_flag);
+DEFINE_GETTER_SETTER_BOOL(trans_memory_atomic);
 
 void
 CGOptions::set_default_builtin_kinds()
