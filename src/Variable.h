@@ -58,11 +58,13 @@ class Function;
 class Block;
 class Lhs;
 class ArrayVariable;
+class VectorVariable;
 
 class Variable
 {
 	friend class VariableSelector;
 	friend class ArrayVariable;
+	friend class VectorVariable;
 public:
 	static Variable *CreateVariable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
 	static Variable *CreateVariable(const std::string &name, const Type *type,

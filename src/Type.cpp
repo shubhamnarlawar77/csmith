@@ -65,6 +65,8 @@ using namespace std;
  */
 const Type *Type::simple_types[MAX_SIMPLE_TYPES];
 
+const Type *Type::vector_types[MAX_VECTOR_TYPES];
+
 Type *Type::void_type = NULL;
 
 // ---------------------------------------------------------------------
@@ -312,6 +314,20 @@ Type::Type(eSimpleType simple_type) :
 	// Nothing else to do.
 }
 
+//constructor for vector types
+Type::Type(eVectorType vector_type) :
+       eType(eVector),
+       ptr_type(0),
+       vector_type(vector_type),
+       sid(0),
+       used(false),
+       printed(false),
+       packed_(false),
+       has_assign_ops_(false),
+       has_implicit_nontrivial_assign_ops_(false)
+{
+}
+
 // --------------------------------------------------------------
  /* constructor for struct or union types
   *******************************************************/
@@ -319,6 +335,7 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
     vector<CVQualifiers> &qfers, vector<int> &fields_length, bool hasAssignOps, bool hasImplicitNontrivialAssignOps) :
     ptr_type(0),
     simple_type(MAX_SIMPLE_TYPES), // not a valid simple type
+    vector_type(MAX_VECTOR_TYPES),
     fields(struct_fields),
     used(false),
     printed(false),
@@ -343,6 +360,7 @@ Type::Type(const Type* t) :
     eType(ePointer),
     ptr_type(t),
     simple_type(MAX_SIMPLE_TYPES), // not a valid simple type
+    vector_type(MAX_VECTOR_TYPES),
     used(false),
     printed(false),
     packed_(false),
@@ -1231,6 +1249,18 @@ Type::GenerateSimpleTypes(void)
     Type::void_type = new Type((enum eSimpleType)eVoid);
 }
 
+void
+Type::GenerateVectorTypes(void)
+{
+	if(CGOptions::vector_extension()){
+		unsigned int st;
+		for (st=eChar; st<MAX_VECTOR_TYPES; st++)
+		{
+			AllTypes.push_back(new Type((enum eVectorType)st));
+		}
+	}
+}
+
 // ---------------------------------------------------------------------
 void
 GenerateAllTypes(void)
@@ -1246,6 +1276,7 @@ GenerateAllTypes(void)
 	}
 
 	Type::GenerateSimpleTypes();
+	Type::GenerateVectorTypes();
     if (CGOptions::use_struct()) {
         while (MoreTypesProbability()) {
 		    Type *ty = Type::make_random_struct_type();
@@ -1747,6 +1778,24 @@ Type::Output(std::ostream &out) const
 	case ePointer:   ptr_type->Output( out ); out << "*"; break;
 	case eUnion:     out << "union U" << sid; break;
 	case eStruct:    out << "struct S" << sid; break;
+	case eVector:
+		if (this->vector_type == ev8si)
+			out << "v8si";
+		else if (this->vector_type == ev8su)
+			out << "v8su";
+		else if (this->vector_type == ev4di)
+			out << "v4di";
+		else if (this->vector_type == ev4du)
+			out << "v4du";
+		else if (this->vector_type == ev16hi)
+			out << "v16hi";
+		else if (this->vector_type == ev16hu)
+			out << "v16hu";
+		else if (this->vector_type == ev32qi)
+			out << "v32qi";
+		else if (this->vector_type == ev32qu)
+			out << "v32qu";
+		break;
 	}
 }
 
@@ -1964,6 +2013,38 @@ OutputStructUnionDeclarations(std::ostream &out)
             OutputStructUnion(AllTypes[i], out);
         }
     }
+}
+
+void
+OutputVectorDeclarations(std::ostream &out)
+{
+	output_comment_line(out, "--- VECTOR DECLARATIONS ---");
+	vector<string> vector_extension = {"int v48i", "unsigned int v8su", "short v16hi",\
+					 "unsigned short v16hu", "char v32qi", "unsigned char v32qu", \
+					"long long v4di", "unsigned long long v4du"};
+
+	vector<string>::iterator itr;
+	for(itr = vector_extension.begin(); itr < vector_extension.end(); itr++){
+		out << "typedef " << *itr << " __attribute__((vector_size(32)));";
+		outputln(out);
+	}
+        /*out << "typedef int v8si __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef unsigned int v8su __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef short v16hi __attribute__((vector_size(32)));";
+        outputln(out);
+ 	out << "typedef unsigned short v16hu __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef char v32qi __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef unsigned char v32qu __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef long long v4di __attribute__((vector_size(32)));";
+        outputln(out);
+        out << "typedef unsigned long long v4du __attribute__((vector_size(32)));";
+        outputln(out);*/
+        outputln(out);
 }
 
 /*

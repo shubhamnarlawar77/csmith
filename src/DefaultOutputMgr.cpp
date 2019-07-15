@@ -206,6 +206,8 @@ DefaultOutputMgr::Output()
 		RandomOutputDefs();
 	}
 	else {
+		if(CGOptions::vector_extension())
+			OutputVectorDeclarations(out);
 		OutputStructUnionDeclarations(out);
 		OutputGlobalVariables(out);
 		OutputForwardDeclarations(out);

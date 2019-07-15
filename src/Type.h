@@ -62,8 +62,22 @@ enum eTypeDesc
 	ePointer,
 	eUnion,
     eStruct,
+	eVector,
 };
-#define MAX_TYPE_DESC ((eTypeDesc) (eStruct+1))
+#define MAX_TYPE_DESC ((eTypeDesc) (eVector+1))
+
+enum eVectorType
+{
+	ev8si,
+	ev8su,
+	ev16hi,
+	ev16hu,
+	ev32qi,
+	ev32qu,
+	ev4di,
+	ev4du,
+};
+#define MAX_VECTOR_TYPES ((eVectorType) (ev4du+1))
 
 /*
  *
@@ -202,6 +216,8 @@ public:
 	// generate all simple types except void and long long(if it is not allowed)
 	static void GenerateSimpleTypes(void);
 
+	static void GenerateVectorTypes(void);
+
 	void get_type_sizeof_string(std::string &s) const;
 
 	// For choosing a random, non-void `eSimpleType'.
@@ -215,6 +231,7 @@ public:
 	static bool has_longlong_field(const vector<const Type *> &fields);
 
 	explicit Type(eSimpleType simple_type);
+	explicit Type(eVectorType vector_type);
 	Type(vector<const Type*>& fields, bool isStruct, bool packed,
 			vector<CVQualifiers> &qfers, vector<int> &fields_length, bool hasAssignOps, bool hasImplicitNontrivialAssignOps);
 	Type(vector<unsigned int>& array_dims, eSimpleType st);
@@ -273,6 +290,7 @@ public:
 	eTypeDesc eType;
 	const Type *ptr_type;
 	eSimpleType simple_type;
+	eVectorType vector_type;
 	vector<unsigned int> dimensions;    // for array types
 	vector<const Type*> fields;         // for struct/union types
 	unsigned int sid;                   // sequence id, for struct/union types
@@ -296,12 +314,15 @@ private:
 
 	static const Type *simple_types[MAX_SIMPLE_TYPES];
 
+	static const Type *vector_types[MAX_VECTOR_TYPES];
+
 	// Package init.
 	friend void GenerateAllTypes(void);
 };
 
 void GenerateAllTypes(void);
 const Type * get_int_type(void);
+void OutputVectorDeclarations(std::ostream &);
 void OutputStructUnionDeclarations(std::ostream &);
 void OutputStructAssignOps(Type* type, std::ostream &out, bool vol);
 void OutputStructUnion(Type* type, std::ostream &out);

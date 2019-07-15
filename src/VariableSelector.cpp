@@ -62,6 +62,7 @@
 #include "DepthSpec.h"
 #include "CFGEdge.h"
 #include "ArrayVariable.h"
+#include "VectorVariable.h"
 #include "Probabilities.h"
 #include "ProbabilityTable.h"
 #include "StringUtils.h"
@@ -165,6 +166,15 @@ Variable *
 VariableSelector::new_variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer)
 {
 	Variable *var = Variable::CreateVariable(name, type, init, qfer);
+	ERROR_GUARD(NULL);
+	AllVars.push_back(var);
+	return var;
+}
+
+VectorVariable *
+VariableSelector::new_vector_variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer)
+{
+	VectorVariable *var = VectorVariable::CreateVectorVariable(name, type, init, qfer);
 	ERROR_GUARD(NULL);
 	AllVars.push_back(var);
 	return var;
@@ -504,7 +514,11 @@ VariableSelector::create_and_initialize(Effect::Access access, const CGContext &
 	const Expression* init = NULL;
 	Variable* var = NULL;
 
-	if (rnd_flipcoin(NewArrayVariableProb)) {
+	if (t->eType == eVector) {
+		init = make_init_value(access, cg_context, t, qfer, blk);
+		var = new_vector_variable(name, t, init, qfer);
+	}
+	else if (rnd_flipcoin(NewArrayVariableProb)) {
 		if (CGOptions::strict_const_arrays()) {
 			init = Constant::make_random(t);
 		} else {

@@ -68,6 +68,7 @@
 #include "Filter.h"
 #include "Error.h"
 #include "ArrayVariable.h"
+#include "VectorVariable.h"
 #include "StringUtils.h"
 
 

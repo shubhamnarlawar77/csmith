@@ -385,6 +385,21 @@ GenerateRandomConstant(const Type* type)
 				assert(0 && "Unsupported type!");
 		    }
 		}
+	}
+	else if(type->eType == eVector){
+		eVectorType vt = type->vector_type;
+		switch(vt) {
+			case ev8si:    v = GenerateRandomIntConstant();		break;
+			case ev8su:    v = GenerateRandomIntConstant();		break;
+			case ev16hi:    v = GenerateRandomShortConstant();		break;
+			case ev16hu:    v = GenerateRandomShortConstant();		break;
+			case ev32qi:    v = GenerateRandomCharConstant();		break;
+			case ev32qu:    v = GenerateRandomCharConstant();		break;
+			case ev4di:      v = GenerateRandomLongConstant();		break;
+			case ev4du:  v = GenerateRandomLongLongConstant();		break;
+			default:
+				assert(0 && "Unsupported type!");
+		}
 	} else {
 		assert(0);  // no support for types other than integers and structs for now
     	}

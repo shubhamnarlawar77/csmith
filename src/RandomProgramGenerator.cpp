@@ -214,6 +214,7 @@ static void print_help()
 	cout << " --function-attributes | --no-func-attributes: enable | disable generate common function attributes (disabled by default)." << endl << endl;
 	cout << " --type-attributes | --no-type-attributes: enable | disable generate common type attributes (disabled by default)." << endl << endl;
 	cout << " --trans-memory-atomic | --no-trans-memory-atomic : enable | disable transactional memory __transaction_atomic extension (disable by default)." << endl << endl;
+	cout << " --vector-extension | --no-vector-extension : enable | disable vector extension (disable by default)." << endl << endl;
 
 }
 
@@ -840,6 +841,16 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-trans-memory-atomic") == 0) {
 			CGOptions::trans_memory_atomic(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--vector-extension") == 0) {
+			CGOptions::vector_extension(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-vector-extension") == 0) {
+			CGOptions::vector_extension(false);
 			continue;
 		}
 

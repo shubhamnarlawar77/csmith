@@ -185,6 +185,8 @@ set(csmith_SOURCES
   VariableSelector.h
   VectorFilter.cpp
   VectorFilter.h
+  VectorVariable.cpp
+  VectorVariable.h
   git_version.h
   platform.cpp
   platform.h
