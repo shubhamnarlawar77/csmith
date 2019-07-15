@@ -59,11 +59,13 @@ class Block;
 class Lhs;
 class ArrayVariable;
 class AttributeGenerator;
+class VectorVariable;
 
 class Variable
 {
 	friend class VariableSelector;
 	friend class ArrayVariable;
+	friend class VectorVariable;
 public:
 	static Variable *CreateVariable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
 	static Variable *CreateVariable(const std::string &name, const Type *type,
@@ -156,6 +158,7 @@ public:
 	const Variable* field_var_of; //expanded from a struct/union
 	const bool isArray;
 	const CVQualifiers qfer;
+	const bool isVector;
 	static std::vector<const Variable*> &get_new_ctrl_vars();
 	static std::vector<const Variable*> &get_last_ctrl_vars();
 
@@ -165,7 +168,7 @@ public:
 	static AttributeGenerator var_attr_generator;
 
 private:
-	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
+	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const bool isVector = 0);
 	Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const Variable* isFieldVarOf, bool isArray);
 	Variable(const std::string &name, const Type *type,
 			 const vector<bool>& isConsts, const vector<bool>& isVolatiles,

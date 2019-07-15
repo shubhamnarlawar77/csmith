@@ -475,6 +475,9 @@ public:
 
 	static bool var_attr_flag(void);
 	static bool var_attr_flag(bool p);
+
+	static bool vector_extension(void);
+	static bool vector_extension(bool p);
 private:
 	static bool enabled_builtin_kind(const string &kind);
 
@@ -624,6 +627,7 @@ private:
 	static bool	trans_memory_atomic_;
 	static bool	label_attr_flag_;
 	static bool	var_attr_flag_;
+	static bool	vector_extension_;
 private:
 	CGOptions(void);
 	CGOptions(CGOptions &cgo);

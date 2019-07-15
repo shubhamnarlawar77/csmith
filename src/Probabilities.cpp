@@ -519,6 +519,9 @@ Probabilities::set_single_name_maps()
 
 	//for choosing variable attributes
 	set_single_name("var_attr_flag", pVarAttrProb);
+
+	//for generating vector extensions
+	set_single_name("vector_extensions", pVectorExtensionProb);
 }
 
 void
@@ -566,6 +569,7 @@ Probabilities::initialize_single_probs()
 	m[pTransAtomicProb] = 3;
 	m[pLabelAttrProb] = 30;
 	m[pVarAttrProb] = 30;
+	m[pVectorExtensionProb] = 70;
 
 	if (CGOptions::volatiles())
 		m[pRegularVolatileProb] = 50;
