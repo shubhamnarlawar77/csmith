@@ -214,6 +214,7 @@ static void print_help()
 	cout << " --function-attributes | --no-func-attributes: enable | disable generate common function attributes (disabled by default)." << endl << endl;
 	cout << " --type-attributes | --no-type-attributes: enable | disable generate common type attributes (disabled by default)." << endl << endl;
 	cout << " --trans-memory-atomic | --no-trans-memory-atomic : enable | disable transactional memory __transaction_atomic extension (disable by default)." << endl << endl;
+	cout << " --label-attributes | --no-label-attributes: enable | disable generate common label attributes (disabled by default)." << endl << endl;
 
 }
 
@@ -840,6 +841,16 @@ main(int argc, char **argv)
 
 		if (strcmp (argv[i], "--no-trans-memory-atomic") == 0) {
 			CGOptions::trans_memory_atomic(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--label-attributes") == 0) {
+			CGOptions::label_attr_flag(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-label-attributes") == 0) {
+			CGOptions::label_attr_flag(false);
 			continue;
 		}
 

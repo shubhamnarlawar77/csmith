@@ -152,6 +152,7 @@ enum ProbName {
 	pFuncAttrProb,
 	pTypeAttrProb,
 	pTransAtomicProb,
+	pLabelAttrProb,
 
 };
 
@@ -240,6 +241,9 @@ enum ProbName {
 
 #define TransAtomicProb \
 	Probabilities::get_prob(pTransAtomicProb)
+
+#define LabelAttrProb \
+	Probabilities::get_prob(pLabelAttrProb)
 
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \

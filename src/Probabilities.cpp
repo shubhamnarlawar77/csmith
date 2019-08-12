@@ -513,6 +513,9 @@ Probabilities::set_single_name_maps()
 
 	//for generating transaction atomic blocks
 	set_single_name("trans_memory_atomic", pTransAtomicProb);
+
+	//for choosing label attributes
+	set_single_name("label_attr_flag", pLabelAttrProb);
 }
 
 void
@@ -558,6 +561,7 @@ Probabilities::initialize_single_probs()
 	m[pFuncAttrProb] = 30;
 	m[pTypeAttrProb] = 50;
 	m[pTransAtomicProb] = 3;
+	m[pLabelAttrProb] = 30;
 
 	if (CGOptions::volatiles())
 		m[pRegularVolatileProb] = 50;
