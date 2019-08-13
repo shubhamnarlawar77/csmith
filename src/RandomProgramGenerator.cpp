@@ -214,7 +214,9 @@ static void print_help()
 	cout << " --function-attributes | --no-func-attributes: enable | disable generate common function attributes (disabled by default)." << endl << endl;
 	cout << " --type-attributes | --no-type-attributes: enable | disable generate common type attributes (disabled by default)." << endl << endl;
 	cout << " --trans-memory-atomic | --no-trans-memory-atomic : enable | disable transactional memory __transaction_atomic extension (disable by default)." << endl << endl;
-	cout << " --vector-extension | --no-vector-extension : enable | disable vector extension (disable by default)." << endl << endl;
+	cout << " --label-attributes | --no-label-attributes: enable | disable generate common label attributes (disabled by default)." << endl << endl;
+	cout << " --variable-attributes | --no-variable-attributes: enable | disable generate common variable attributes (disabled by default)." << endl << endl;
+  cout << " --vector-extension | --no-vector-extension : enable | disable vector extension (disable by default)." << endl << endl;
 
 }
 
@@ -844,15 +846,35 @@ main(int argc, char **argv)
 			continue;
 		}
 
-		if (strcmp (argv[i], "--vector-extension") == 0) {
+		if (strcmp (argv[i], "--label-attributes") == 0) {
+			CGOptions::label_attr_flag(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-label-attributes") == 0) {
+			CGOptions::label_attr_flag(false);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--variable-attributes") == 0) {
+			CGOptions::var_attr_flag(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-variable-attributes") == 0) {
+			CGOptions::var_attr_flag(false);
+			continue;
+		}
+    
+    if (strcmp (argv[i], "--vector-extension") == 0) {
 			CGOptions::vector_extension(true);
 			continue;
 		}
 
 		if (strcmp (argv[i], "--no-vector-extension") == 0) {
 			CGOptions::vector_extension(false);
-			continue;
-		}
+      continue;
+    }
 
 		if (strcmp (argv[i], "--max-array-dim") ==0 ) {
 			unsigned long dim;

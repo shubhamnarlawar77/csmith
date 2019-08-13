@@ -70,6 +70,7 @@
 #include "ArrayVariable.h"
 #include "VectorVariable.h"
 #include "StringUtils.h"
+#include "Attribute.h"
 
 
 using namespace std;
@@ -78,7 +79,24 @@ unsigned long Variable::ctrl_vars_count;
 
 const char Variable::sink_var_name[] = "csmith_sink_";
 
+bool Variable::var_attr_generate = false;
+AttributeGenerator Variable::var_attr_generator;
+
 //////////////////////////////////////////////////////////////////////////////
+
+void
+InitializeVariableAttributes()
+{
+	if(CGOptions::var_attr_flag()){
+		Variable::var_attr_generator.attributes.push_back(new MultiValuedAttribute("visibility", VarAttrProb, {"default", "hidden", "protected", "internal"}));
+		Variable::var_attr_generator.attributes.push_back(new AlignedAttribute("aligned", VarAttrProb, 8));
+		Variable::var_attr_generator.attributes.push_back(new BooleanAttribute("common", VarAttrProb));
+		Variable::var_attr_generator.attributes.push_back(new BooleanAttribute("uncommon", VarAttrProb));
+		Variable::var_attr_generator.attributes.push_back(new BooleanAttribute("deprecated", VarAttrProb));
+		Variable::var_attr_generator.attributes.push_back(new BooleanAttribute("unused", VarAttrProb));
+		Variable::var_attr_generator.attributes.push_back(new BooleanAttribute("used", VarAttrProb));
+	}
+}
 
 int find_variable_in_set(const vector<const Variable*>& set, const Variable* v)
 {
@@ -410,6 +428,10 @@ Variable::CreateVariable(const std::string &name, const Type *type,
 Variable *
 Variable::CreateVariable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer)
 {
+	if(!Variable::var_attr_generate){
+		InitializeVariableAttributes();
+		Variable::var_attr_generate = true;
+	}
 	assert(type);
 	if (type->eType == eSimple)
 		assert(type->simple_type != eVoid);
@@ -673,7 +695,9 @@ Variable::OutputDef(std::ostream &out, int indent) const
 		out << "static ";
 	}
 	output_qualified_type(out);
-	out << get_actual_name() << " = ";
+	out << get_actual_name();
+	var_attr_generator.GenerateAllAttributes(out);
+	out << " = ";
 	assert(init);
 	init->Output(out);
 	out << ";";
