@@ -18,3 +18,29 @@ To post messages to the list, you must first subscribe to the list.
 Most Csmith info can be found here:
 
   http://embed.cs.utah.edu/csmith/
+
+//////////////////////////////////////////////####GCC GSOC 2019/////////////////////////////////////////////////////
+
+The fork csmith-gcc-v2 represents Google Summer Of Code 2019 project done under mentors Martin Liska and Andi Kleen.
+
+Project title - Implement Csmith fuzzer leveraging GCC C Extensions and run it against GCC to find compiler bugs.
+
+The following GCC C Extensions are added in Csmith - 
+
+1. Function attributes - artificial, flatten, hot, cold, noreorder, used, unused, nothrow, deprecated, no_icf, no_profile_instrument_function, no_instrument_function, no_sanitize_address, no_sanitize_thread, no_sanitize_undefined, no_split_stack, noinline, noplt, stack_protect, noclone, optimize, alias, section, aligned, visibility
+
+2. Type attributes - visibility, aligned, warn_if_not_aligned, deprecated, transparent_union
+
+3. Transaction atomic (not a GCC C Extension)
+
+4. Variable attributes - visibility, aligned, common, uncommon, deprecated, unused, used
+
+5. Label attributes - hot cold
+
+6. Vector extensions (In progress, yet to be merged)
+
+Below are links to ICE(Internal Compiler Error) found -
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91001
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91021
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91105
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91106
