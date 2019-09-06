@@ -74,6 +74,8 @@ static vector<Type *> derived_types;
 
 AttributeGenerator type_attr_generator;
 
+static std::map<string,string> vector_types;
+
 //////////////////////////////////////////////////////////////////////
 
 void
@@ -1964,6 +1966,35 @@ OutputStructUnionDeclarations(std::ostream &out)
             OutputStructUnion(AllTypes[i], out);
         }
     }
+}
+
+void GenerateVectorDeclarations()
+{
+	vector_types.insert({"int", "v8int"});
+	vector_types.insert({"unsigned int", "v8uint"});
+	vector_types.insert({"short", "v16short"});
+	vector_types.insert({"unsigned short", "v16ushort"});
+	vector_types.insert({"char", "v32char"});
+	vector_types.insert({"unsigned char", "v32uchar"});
+	vector_types.insert({"long", "v4long"});
+	vector_types.insert({"unsigned long", "v4ulong"});
+	vector_types.insert({"long long", "v4longlong"});
+	vector_types.insert({"unsigned long long", "v4ulonglong"});
+}
+
+void
+OutputVectorDeclarations(std::ostream &out)
+{
+	if(CGOptions::vector_extension()){
+		GenerateVectorDeclarations();
+		output_comment_line(out, "--- VECTOR DECLARATIONS ---");
+		std::map<string,string>::iterator itr;
+		for (itr = vector_types.begin(); itr != vector_types.end(); itr++){
+			out << "typedef " << itr->first << " " << itr->second << " __attribute__((vector_size(32)));";
+			outputln(out);
+		}
+		outputln(out);
+	}
 }
 
 /*

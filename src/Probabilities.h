@@ -154,6 +154,7 @@ enum ProbName {
 	pTransAtomicProb,
 	pLabelAttrProb,
 	pVarAttrProb,
+	pVectorExtensionProb,
 
 };
 
@@ -249,6 +250,8 @@ enum ProbName {
 #define VarAttrProb \
 	Probabilities::get_prob(pVarAttrProb)
 
+#define VectorExtensionProb \
+	Probabilities::get_prob(pVectorExtensionProb)
 //////////////////////////////////////////////////
 #define UNARY_OPS_PROB_FILTER \
 	Probabilities::get_prob_filter(pUnaryOpsProb)

@@ -46,6 +46,7 @@ class Lhs;
 class Fact;
 class CVQualifiers;
 class ArrayVariable;
+class VectorVariable;
 
 enum eVariableScope
 {
@@ -59,9 +60,11 @@ enum eVariableScope
 class VariableSelector
 {
 	friend class ArrayVariable;
+	friend class VectorVariable;
 public:
 	VariableSelector(void) {};
 	static Variable* new_variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
+	static VectorVariable* new_vector_variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer);
 	// ISSUE: use it only when you want to create a static variable
 	static Variable *make_dummy_static_variable(const string &name);
 

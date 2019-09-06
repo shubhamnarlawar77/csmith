@@ -206,6 +206,7 @@ DefaultOutputMgr::Output()
 		RandomOutputDefs();
 	}
 	else {
+		OutputVectorDeclarations(out);
 		OutputStructUnionDeclarations(out);
 		OutputGlobalVariables(out);
 		OutputForwardDeclarations(out);

@@ -68,6 +68,7 @@
 #include "Filter.h"
 #include "Error.h"
 #include "ArrayVariable.h"
+#include "VectorVariable.h"
 #include "StringUtils.h"
 #include "Attribute.h"
 
@@ -454,7 +455,7 @@ Variable::Variable(const std::string &name, const Type *type,
 	  isAuto(isAuto), isStatic(isStatic), isRegister(isRegister),
 	  isBitfield_(isBitfield), isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(isFieldVarOf), isArray(false),
-	  qfer(isConsts, isVolatiles)
+	  qfer(isConsts, isVolatiles), isVector(false)
 {
 	// nothing else to do
 }
@@ -462,13 +463,13 @@ Variable::Variable(const std::string &name, const Type *type,
 /*
  *
  */
-Variable::Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer)
+Variable::Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const bool isVector)
 	: name(name), type(type),
 	  init(init),
 	  isAuto(false), isStatic(false), isRegister(false), isBitfield_(false),
 	  isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(0), isArray(false),
-	  qfer(*qfer)
+	  qfer(*qfer), isVector(isVector)
 {
 	// nothing else to do
 }
@@ -480,7 +481,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 	  isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(isFieldVarOf),
 	  isArray(isArray),
-	  qfer(*qfer)
+	  qfer(*qfer), isVector(false)
 {
 	// nothing else to do
 }

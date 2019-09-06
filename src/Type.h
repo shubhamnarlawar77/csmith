@@ -302,6 +302,7 @@ private:
 
 void GenerateAllTypes(void);
 const Type * get_int_type(void);
+void OutputVectorDeclarations(std::ostream &);
 void OutputStructUnionDeclarations(std::ostream &);
 void OutputStructAssignOps(Type* type, std::ostream &out, bool vol);
 void OutputStructUnion(Type* type, std::ostream &out);

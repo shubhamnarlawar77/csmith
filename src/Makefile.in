@@ -157,10 +157,10 @@ am__csmith_SOURCES_DIST = AbsExtension.cpp AbsExtension.h \
 	StatementIf.h StatementReturn.cpp StatementReturn.h \
 	StringUtils.cpp StringUtils.h Type.cpp Type.h Variable.cpp \
 	Variable.h VariableSelector.cpp VariableSelector.h \
-	VectorFilter.cpp VectorFilter.h git_version.h platform.cpp \
-	platform.h random.cpp random.h util.cpp util.h \
-	rand48/_rand48.c rand48/lrand48.c rand48/rand48.h \
-	rand48/srand48.c
+	VectorFilter.cpp VectorFilter.h VectorVariable.cpp \
+	VectorVariable.h git_version.h platform.cpp platform.h \
+	random.cpp random.h util.cpp util.h rand48/_rand48.c \
+	rand48/lrand48.c rand48/rand48.h rand48/srand48.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_LRAND48_FALSE@am__objects_1 = rand48/_rand48.$(OBJEXT) \
 @HAVE_LRAND48_FALSE@	rand48/lrand48.$(OBJEXT) \
@@ -197,8 +197,9 @@ am_csmith_OBJECTS = AbsExtension.$(OBJEXT) \
 	StatementGoto.$(OBJEXT) StatementIf.$(OBJEXT) \
 	StatementReturn.$(OBJEXT) StringUtils.$(OBJEXT) Type.$(OBJEXT) \
 	Variable.$(OBJEXT) VariableSelector.$(OBJEXT) \
-	VectorFilter.$(OBJEXT) platform.$(OBJEXT) random.$(OBJEXT) \
-	util.$(OBJEXT) $(am__objects_1)
+	VectorFilter.$(OBJEXT) VectorVariable.$(OBJEXT) \
+	platform.$(OBJEXT) random.$(OBJEXT) util.$(OBJEXT) \
+	$(am__objects_1)
 nodist_csmith_OBJECTS = git_version.$(OBJEXT)
 csmith_OBJECTS = $(am_csmith_OBJECTS) $(nodist_csmith_OBJECTS)
 csmith_LDADD = $(LDADD)
@@ -262,10 +263,10 @@ am__depfiles_remade = ./$(DEPDIR)/AbsExtension.Po \
 	./$(DEPDIR)/StatementReturn.Po ./$(DEPDIR)/StringUtils.Po \
 	./$(DEPDIR)/Type.Po ./$(DEPDIR)/Variable.Po \
 	./$(DEPDIR)/VariableSelector.Po ./$(DEPDIR)/VectorFilter.Po \
-	./$(DEPDIR)/git_version.Po ./$(DEPDIR)/platform.Po \
-	./$(DEPDIR)/random.Po ./$(DEPDIR)/util.Po \
-	rand48/$(DEPDIR)/_rand48.Po rand48/$(DEPDIR)/lrand48.Po \
-	rand48/$(DEPDIR)/srand48.Po
+	./$(DEPDIR)/VectorVariable.Po ./$(DEPDIR)/git_version.Po \
+	./$(DEPDIR)/platform.Po ./$(DEPDIR)/random.Po \
+	./$(DEPDIR)/util.Po rand48/$(DEPDIR)/_rand48.Po \
+	rand48/$(DEPDIR)/lrand48.Po rand48/$(DEPDIR)/srand48.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -445,6 +446,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -510,8 +512,9 @@ csmith_SOURCES = AbsExtension.cpp AbsExtension.h \
 	StatementIf.h StatementReturn.cpp StatementReturn.h \
 	StringUtils.cpp StringUtils.h Type.cpp Type.h Variable.cpp \
 	Variable.h VariableSelector.cpp VariableSelector.h \
-	VectorFilter.cpp VectorFilter.h git_version.h platform.cpp \
-	platform.h random.cpp random.h util.cpp util.h $(am__append_1)
+	VectorFilter.cpp VectorFilter.h VectorVariable.cpp \
+	VectorVariable.h git_version.h platform.cpp platform.h \
+	random.cpp random.h util.cpp util.h $(am__append_1)
 nodist_csmith_SOURCES = \
 	git_version.cpp
 
@@ -703,6 +706,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Variable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VariableSelector.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VectorFilter.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VectorVariable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/git_version.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/platform.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random.Po@am__quote@ # am--include-marker
@@ -969,6 +973,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Variable.Po
 	-rm -f ./$(DEPDIR)/VariableSelector.Po
 	-rm -f ./$(DEPDIR)/VectorFilter.Po
+	-rm -f ./$(DEPDIR)/VectorVariable.Po
 	-rm -f ./$(DEPDIR)/git_version.Po
 	-rm -f ./$(DEPDIR)/platform.Po
 	-rm -f ./$(DEPDIR)/random.Po
@@ -1089,6 +1094,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Variable.Po
 	-rm -f ./$(DEPDIR)/VariableSelector.Po
 	-rm -f ./$(DEPDIR)/VectorFilter.Po
+	-rm -f ./$(DEPDIR)/VectorVariable.Po
 	-rm -f ./$(DEPDIR)/git_version.Po
 	-rm -f ./$(DEPDIR)/platform.Po
 	-rm -f ./$(DEPDIR)/random.Po
